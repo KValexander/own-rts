@@ -228,7 +228,7 @@ let game = {
 				if($(".selected").attr("name") == game.player_faction) {
 					// Передвижение выбранного элемента
 					$(".selected").animate({
-						top: game.posY - 50 + "px",
+						top: game.posY - 75 + "px",
 						left: game.posX - 25 + "px"
 					}, 300);
 				} else {
