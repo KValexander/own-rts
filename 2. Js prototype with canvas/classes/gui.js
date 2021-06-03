@@ -19,7 +19,14 @@ class GUI {
 		this.elements = {
 			button: [], // кнопки
 			surface: [], // поверхности
+			icon: [], // иконки
+			texture: [], // текстуры
 			bg: {}, // изображения заднего фона
+		};
+
+		// Объект popup окна
+		this.popup = {
+			rendering: false,
 		};
 
 		// Сетка
@@ -47,6 +54,8 @@ class GUI {
 		// Очистка массивов объект элементов
 		this.elements.button = [];
 		this.elements.surface = [];
+		// Сокрытие popup окна
+		this.popup.rendering = false;
 
 		if(init == "menu") this.initMenu(menu); // Главное меню
 		if(init == "load") this.initLoad(); // Экран загрузки
@@ -57,38 +66,59 @@ class GUI {
 	initMenu(menu) {
 		// Задний фон для меню
 		this.elements.bg.menu = methods.loadImage("assets/bg_menu.jpg");
-
-		// Добавление поверхностей
-		this.addSurface(1, "rgba(255,255,255,0.5)", this.grid.lineX * 0.5, this.grid.lineY * 1, this.grid.lineX * 3, this.grid.lineY * 7);
-
+		
 		// Главный экран меню
 		if(menu == "main") {
+			// Добавление поверхностей
+			this.addSurface(1, "rgba(255,255,255,0.5)", this.grid.lineX * 0.5, this.grid.lineY * 1, this.grid.lineX * 4, this.grid.lineY * 7);
+
 			// Добавление кнопок
-			this.addButton(1, "Компания", "#fff", "#050411", this.grid.lineX, this.grid.lineY * 2, this.grid.lineX * 2, this.grid.lineY);
-			this.addButton(2, "Настройки", "#fff", "#050411", this.grid.lineX, this.grid.lineY * 4, this.grid.lineX * 2, this.grid.lineY);
-			this.addButton(3, "Выход", "#fff", "#050411", this.grid.lineX, this.grid.lineY * 6, this.grid.lineX * 2, this.grid.lineY);
+			this.addButton(1, "Компания", "#fff", "#050411", this.grid.lineX, this.grid.lineY * 2, this.grid.lineX * 3, this.grid.lineY);
+			this.addButton(2, "Настройки", "#fff", "#050411", this.grid.lineX, this.grid.lineY * 4, this.grid.lineX * 3, this.grid.lineY);
+			this.addButton(3, "Выход", "#fff", "#050411", this.grid.lineX, this.grid.lineY * 6, this.grid.lineX * 3, this.grid.lineY);
 		}
 
 		// Экран компании
 		if(menu == "company") {
+			// Добавление поверхностей
+			this.addSurface(1, "rgba(255,255,255,0.5)", this.grid.lineX * 0.5, this.grid.lineY * 1, this.grid.lineX * 4, this.grid.lineY * 7);
+
 			// Добавление кнопок
-			this.addButton(4, "Одиночная компания", "#fff", "#050411", this.grid.lineX, this.grid.lineY * 2, this.grid.lineX * 2, this.grid.lineY);
-			this.addButton(5, "Своя битва", "#fff", "#050411", this.grid.lineX, this.grid.lineY * 4, this.grid.lineX * 2, this.grid.lineY);
-			this.addButton(6, "Вернуться", "#fff", "#050411", this.grid.lineX, this.grid.lineY * 6, this.grid.lineX * 2, this.grid.lineY);
+			this.addButton(4, "Одиночная компания", "#fff", "#050411", this.grid.lineX, this.grid.lineY * 2, this.grid.lineX * 3, this.grid.lineY);
+			this.addButton(5, "Своя битва", "#fff", "#050411", this.grid.lineX, this.grid.lineY * 4, this.grid.lineX * 3, this.grid.lineY);
+			this.addButton(6, "Вернуться", "#fff", "#050411", this.grid.lineX, this.grid.lineY * 6, this.grid.lineX * 3, this.grid.lineY);
+		}
+
+		if(menu == "company_choise") {
+			// Добавление поверхностей
+			this.addSurface(1, "rgba(255,255,255,0.5)", this.grid.lineX * 0.5, this.grid.lineY * 1, this.grid.lineX * 15, this.grid.lineY * 7);
+			this.addSurface(2, "rgba(255,255,255,0.5)", this.grid.lineX * 11.5, this.grid.lineY * 13.5, this.grid.lineX * 4, this.grid.lineY * 2);
+
+			// Добавление кнопок
+			this.addButton(10, "Компания Империи", "#fff", "#050411", this.grid.lineX, this.grid.lineY * 2, this.grid.lineX * 14, this.grid.lineY);
+			this.addButton(11, "Компания Союза Рас", "#fff", "#050411", this.grid.lineX, this.grid.lineY * 4, this.grid.lineX * 14, this.grid.lineY, false);
+			this.addButton(12, "Компания Механикусов", "#fff", "#050411", this.grid.lineX, this.grid.lineY * 6, this.grid.lineX * 14, this.grid.lineY, false);
+			this.addButton(13, "Вернуться", "#fff", "#050411", this.grid.lineX * 12, this.grid.lineY * 14, this.grid.lineX * 3, this.grid.lineY);
+		
 		}
 
 		// Экран настроек
 		if(menu == "option") {
+			// Добавление поверхностей
+			this.addSurface(1, "rgba(255,255,255,0.5)", this.grid.lineX * 0.5, this.grid.lineY * 1, this.grid.lineX * 4, this.grid.lineY * 7);
+
 			// Добавление кнопок
-			this.addButton(7, "Игра", "#fff", "#050411", this.grid.lineX, this.grid.lineY * 2, this.grid.lineX * 2, this.grid.lineY);
-			this.addButton(8, "Графика", "#fff", "#050411", this.grid.lineX, this.grid.lineY * 4, this.grid.lineX * 2, this.grid.lineY);
-			this.addButton(9, "Вернуться", "#fff", "#050411", this.grid.lineX, this.grid.lineY * 6, this.grid.lineX * 2, this.grid.lineY);
+			this.addButton(7, "Игра", "#fff", "#050411", this.grid.lineX, this.grid.lineY * 2, this.grid.lineX * 3, this.grid.lineY);
+			this.addButton(8, "Графика", "#fff", "#050411", this.grid.lineX, this.grid.lineY * 4, this.grid.lineX * 3, this.grid.lineY);
+			this.addButton(9, "Вернуться", "#fff", "#050411", this.grid.lineX, this.grid.lineY * 6, this.grid.lineX * 3, this.grid.lineY);
 		}
 
 	}
 
 	// Экран загрузки
 	initLoad() {
+		// Задний фон для экрана загрузки
+		this.elements.bg.load = methods.loadImage("assets/bg_load.jpg");
 
 	}
 
@@ -112,12 +142,55 @@ class GUI {
 			color: "#ff8080", // цвет интерфейса
 		};
 		// Стартовая позиция по вертикали
-		this.bottom.y = this.screen.height - this.bottom.height; 
+		this.bottom.y = this.screen.height - this.bottom.height;
 	}
 	// =================================
 
+	// Раздел всплывающего окна
+	// =================================
+
+	// Конфигурация popup окна
+	configPopup(text, x, y) {
+		this.popup.text = text;
+		this.popup.x = x;
+		this.popup.y = y;
+	}
+
+	// Вывод popup окна
+	outPopup() {
+		// Цвет заливки
+		this.screen.ctx.fillStyle = "rgba(0,0,0,0.5)";
+		this.screen.ctx.fillRect(this.popup.x - 10, this.popup.y - 14, 550, 40);
+		// Цвет обводки
+		this.screen.ctx.fillStyle = "#000";
+		this.screen.ctx.strokeRect(this.popup.x - 10, this.popup.y - 14, 550, 40);
+
+		// Горизонтальное позиционирование текста
+		this.screen.ctx.textAlign = "start";
+		// Вертикальное позиционирование
+		this.screen.ctx.textBaseline = "top";
+		// Цвет текста
+		this.screen.ctx.fillStyle = "white";
+		// Шрифт
+		this.screen.ctx.font = "12pt Arial";
+		// Отрисовка текста
+		this.screen.ctx.fillText(this.popup.text, this.popup.x, this.popup.y);
+	}
+
 	// Раздел добавления и создания элементов экрана
 	// =================================
+
+	// Добавление иконок
+	addIcon(id, src, x, y, width, height) {
+		let icon = {};
+		icon.id = id;
+		icon.image = method.loadImage(src);
+		icon.x = x;
+		icon.y = y;
+		icon.width = width;
+		icon.height = height;
+		this.elements.icon.push(icon);
+	}
 
 	// Добавление поверхностей
 	addSurface(id, color, x, y, width, height) {
@@ -134,8 +207,8 @@ class GUI {
 		this.elements.surface.push(surface);
 	}
 
-	// Добавление кнопки в массив элементов
-	addButton(id, text, color_text, color_rect, x, y, width, height) {
+	// Добавление кнопки
+	addButton(id, text, color_text, color_rect, x, y, width, height, access) {
 		// Объект кнопки
 		let button = {}; // объект кнопки
 		button.id = id; // id кнопки
@@ -148,6 +221,7 @@ class GUI {
 		button.height = height; // высота
 		button.hover = false; // состояние наведения
 		button.click = false; // состояние нажатия
+		button.access = access ?? true; // состояние доступа
 		// button.rendering = false; // состояние отрисовки
 		// Добавление кнопки в массив кнопок
 		this.elements.button.push(button);
@@ -167,24 +241,35 @@ class GUI {
 		this.screen.ctx.shadowBlur = 15; // тень
 		this.screen.ctx.shadowColor = "#050411"; // цвет тени
 		this.screen.ctx.strokeStyle = "#050411"; // цвет рамки
-		this.screen.ctx.lineWidth = 3; // ширини линии
+		this.screen.ctx.lineWidth = 3; // ширина линии
 		this.screen.ctx.strokeRect(data.x, data.y, data.width, data.height); // рамка
 		this.screen.ctx.shadowBlur = 0; // очистка тени
 	}
 	
 	// Создание кнопки
 	createButton(data) {
-		// Цвет области кнопки
-		if(data.hover) this.screen.ctx.fillStyle = "#fff"; // в случае наведения
-		else this.screen.ctx.fillStyle = data.color_rect; // статическое состояние
+		// Цвет
+		let color = "";
+
+		// Выбор цвета области кнопки
+		if(!data.access) color = "gray"; // в случае недоступности
+		else if(data.hover) color = "#fff"; // в случае наведения
+		else color = data.color_rect; // статическое состояние
+		
+		// Цвета области кнопки
+		this.screen.ctx.fillStyle = color;
 		let rect = new Path2D(); // добавление области кнопки
 		rect.rect(data.x, data.y, data.width, data.height); // область кнопки
 		rect.id = data.id; // для опознавания области
 		this.screen.ctx.fill(rect); // отрисовка области
 
+		// Выбор цвета текста
+		if(!data.access) color = "#555"; // в случае недоступности
+		else if(data.hover) color = "#050411"; // в случае наведения
+		else color = data.color_text; // статическое состояние
+
 		// Цвет текста
-		if(data.hover) this.screen.ctx.fillStyle = "#050411"; // в случае наведения
-		else this.screen.ctx.fillStyle = data.color_text; // статическое состояние
+		this.screen.ctx.fillStyle = color;
 		// Расположение текста горизонтально
 		this.screen.ctx.textAlign = "center";
 		// Расположение текста вертикально
@@ -202,12 +287,14 @@ class GUI {
 
 	// Обработка событий
 	eventHandling() {
+		// Для обращения к this из обработчиков событий
+		let self = this;
 		// Обработка событий мыши
-		this.mouseEventHandling(this.elements.button);
+		this.mouseEventHandling(this.elements.button, self);
 	}
 
 	// Обработка событий мыши
-	mouseEventHandling(el, chIn) {
+	mouseEventHandling(el, self) {
 		// Коордитаны мыши e.offsetX, e.offsetY
 
 		// Движение мыши на окне
@@ -215,8 +302,35 @@ class GUI {
 			// Цикл проверки наведения на кнопку
 			for(let i = 0; i < el.length; i++) {
 				// Проверка наведения на кнопку
-				if(methods.collisionButton(el[i], e.offsetX, e.offsetY)) el[i].hover = true;
-				else el[i].hover = false;
+				if(methods.collisionButton(el[i], e.offsetX, e.offsetY)) {
+					// Если кнопка доступна
+					if(el[i].access) {
+						// Активация состояния наведения
+						el[i].hover = true;
+						// Перебор id кнопок
+						switch(el[i].id) {
+							// При наведение на кнопку "Компания Империи"
+							case 10:
+								self.configPopup(text_storage.company_menu.empire, e.offsetX, e.offsetY);
+								self.popup.rendering = true;
+								break;
+						}
+					} else {
+						// Вывод сообщения о заблокированности кнопки
+						switch(el[i].id) { // перебор id кнопок
+							// Если недоступны кнопки "Компания Союза Рас" и "Компания Механикусов"
+							case 11: case 12:
+								self.configPopup(text_storage.error.availability.company, e.offsetX, e.offsetY);
+								self.popup.rendering = true;
+								break;
+						}
+					}
+				} else {
+					// Сокрытие popup окна
+					// self.popup.rendering = false;
+					// Деактивация состояния наведения
+					el[i].hover = false;
+				}
 			}
 		}
 
@@ -226,12 +340,22 @@ class GUI {
 			for(let i = 0; i < el.length; i++) {
 				// Проверка нажатия на кнопку
 				if(methods.collisionButton(el[i], e.offsetX, e.offsetY)) {
-					// Если нажата кнопка "Компания"
-					if(el[i].id == 1) this.changeInit("menu", "company");
-					// Если нажата кнопка "Настройки"
-					if(el[i].id == 2) this.changeInit("menu", "option");
-					// Если нажата кнопка "Вернуться"
-					if(el[i].id == 6 || el[i].id == 9) this.changeInit("menu", "main");
+					// Если кнопка доступна
+					if(el[i].access) {
+						// Перебор id кнопок
+						switch(el[i].id) {
+							// Если нажата кнопка "Компания"
+							case 1: self.changeInit("menu", "company"); break;
+							// Если нажата кнопка "Настройки"
+							case 2: self.changeInit("menu", "option"); break;
+							// Если нажата кнопка "Одиночная компания"
+							case 4: self.changeInit("menu", "company_choise"); break;
+							// Если нажата кнопка "Вернуться" на экранах Настроек и Компании
+							case 6: case 9: self.changeInit("menu", "main"); break;
+							// Если нажата кнопка "Вернуться" в окне одиночных компаний
+							case 13: self.changeInit("menu", "company"); break;
+						}
+					}
 				}
 			}
 		}
@@ -256,6 +380,10 @@ class GUI {
 		// Отрисовка кнопок
 		for(let i = 0; i < this.elements.button.length; i++)
 			this.createButton(this.elements.button[i]);
+
+		// Отрисовка popup окна
+		if(this.popup.rendering)
+			this.outPopup();
 	}
 
 	// Отрисовка данных экрана загрузки

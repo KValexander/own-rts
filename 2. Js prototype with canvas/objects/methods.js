@@ -12,11 +12,13 @@ let methods = {
 
 	// Функция загрузки изображения
 	loadImage: function(src) {
-		// return new Promise((resolve) => {
-			const image = new Image();
-			image.src = src;
-			return image;
-		// 	image.onload = () => resolve(image);
-		// });
+		const image = new Image();
+		image.src = src;
+		return image;
+	},
+
+	// Получение рандомного числа
+	randomInteger: function(min, max) {
+		
 	}
 };
