@@ -6,6 +6,7 @@ class GUI {
 		// canvas и ctx
 		this.screen = screen;
 
+		// Объявление общих данных
 		this.initVariable();
 	}
 
@@ -14,19 +15,13 @@ class GUI {
 		// Объект со всеми элементами интерфейса экрана
 		this.elements = {
 			button: [], // кнопки
+			bg: {}, // изображения заднего фона
 		};
 
-		// Вызов метода объявления данных для экрана меню
-		this.initMenu();
-		// Вызов метода объявления данных для экрана игры
-		this.initGame();
-	}
-
-	// Объявление данных для экрана меню
-	initMenu() {
 		// Сетка
 		this.grid = {
 			rendering: false, // состояние отрисовки
+			color: "#ff8080", // цвет сетки
 			cellsX: 16, // количество ячеек по горизонтали
 			cellsY: 16, // количество ячеек по вертикали
 		};
@@ -39,13 +34,22 @@ class GUI {
 		// Одна ячейка в ширину = this.grid.lineX * 1, две ячейки * 2 и т.д
 		// Одна ячейка в высоту = this.grid.lineY * 1, две ячейки * 2 и т.д
 
+		// Вызов метода объявления данных для экрана меню
+		this.initMenu();
+		// Вызов метода объявления данных для экрана игры
+		this.initGame();
+	}
+
+	// Объявление данных для экрана меню
+	initMenu() {
+
 		// Добавление кнопок в объект всех элементов
 		this.addButton(1, "New game", "#fff", "#000", this.grid.lineX, this.grid.lineY * 2, this.grid.lineX * 2, this.grid.lineY);
 		this.addButton(2, "Exit", "#fff", "#000", this.grid.lineX, this.grid.lineY * 4, this.grid.lineX * 2, this.grid.lineY);
 
-		// Задний фон	
-		this.bg_menu = new Image();
-		this.bg_menu.src = "assets/bg_menu.jpg"; 
+		// Задний фон для меню
+		this.elements.bg.menu = new Image();
+		this.elements.bg.menu.src = "assets/bg_menu.jpg";
 	}
 
 	// Объявление данных для экрана игры
@@ -73,30 +77,35 @@ class GUI {
 
 	// Добавление кнопки в массив элементов
 	addButton(id, text, color_text, color_rect, x, y, width, height) {
-		let button = {};
-		button.id = id;
-		button.text = text;
-		button.color_text = color_text;
-		button.color_rect = color_rect;
-		button.x = x;
-		button.y = y;
-		button.width = width;
-		button.height = height;
-
+		// Создание объекта кнопки
+		let button = {}; // объект кнопки
+		button.id = id; // id кнопки
+		button.text = text; // надпись кнопки
+		button.color_text = color_text; // цвет надписи
+		button.color_rect = color_rect; // цвет области кнопки
+		button.x = x; // стартовая позиция по горизонтали
+		button.y = y; // стартовая позиция по вертикали
+		button.width = width; // ширина
+		button.height = height; // высота
+		button.hover = false; // состояние наведения
+		button.click = false; // состояние нажатия
+		// Добавление кнопки в массив всех кнопок
 		this.elements.button.push(button);
 	}
 	
 	// Создание кнопки
 	createButton(data) {
 		// Цвет области кнопки
-		this.screen.ctx.fillStyle = data.color_rect;
+		if(data.hover) this.screen.ctx.fillStyle = "#fff"; // в случае наведения
+		else this.screen.ctx.fillStyle = data.color_rect; // статическое состояние
 		let rect = new Path2D(); // добавление области кнопки
 		rect.rect(data.x, data.y, data.width, data.height); // область кнопки
 		rect.id = data.id; // для опознавания области
 		this.screen.ctx.fill(rect); // отрисовка области
 
 		// Цвет текста
-		this.screen.ctx.fillStyle = data.color_text;
+		if(data.hover) this.screen.ctx.fillStyle = "#000"; // в случае наведения
+		else this.screen.ctx.fillStyle = data.color_text; // статическое состояние
 		// Расположение текста горизонтально
 		this.screen.ctx.textAlign = "center";
 		// Расположение текста вертикально
@@ -108,20 +117,51 @@ class GUI {
 		this.screen.ctx.fillText(data.text, data.x + data.width / 2, data.y + data.height / 2);
 	}
 
-	// Изменение кнопки в случае наведения
-	hoverButton() {
+	// Обработка событий
+	eventHandling() {
+		// Обработка событий мыши
+		this.mouseEventHandling(this.elements.button, this.hover);
+	}
 
+	// Обработка событий мыши
+	mouseEventHandling(el, hover) {
+		// Коордитаны мыши e.offsetX, e.offsetY
+
+		// Движение мыши на окне
+		this.screen.canvas.onmousemove = function(e) {
+			// Цикл проверки наведения на кнопку
+			for(let i = 0; i < el.length; i++) {
+				// Проверка наведения на кнопку
+				if(methods.collisionButton(el[i], e.offsetX, e.offsetY)) {
+					el[i].hover = true;
+				} else {
+					el[i].hover = false;
+				}
+			}
+		}
+
+		// Нажатие мыши на окне
+		this.screen.canvas.onclick = function(e) {
+			// Цикл проверки нажатия на кнопку
+			for(let i = 0; i < el.length; i++) {
+				// Проверка нажатия на кнопку
+				if(methods.collisionButton(el[i], e.offsetX, e.offsetY)) {
+					el[i].click = true;
+				} else {
+					el[i].click = false;
+				}
+			}
+		}
 	}
 
 	// Отрисовка данных экрана меню
 	rendering_menu() {
 		// Задний фон
-		this.screen.ctx.drawImage(this.bg_menu, 0, 0, this.screen.width, this.screen.height);
+		this.screen.ctx.drawImage(this.elements.bg.menu, 0, 0, this.screen.width, this.screen.height);
 
 		// Отрисовка сетки
-		if (this.grid.rendering == false) {
+		if (this.grid.rendering == false)
 			this.drawGrid();
-		}
 
 		// Отрисовка кнопок
 		for(let i = 0; i < this.elements.button.length; i++)
@@ -155,7 +195,7 @@ class GUI {
 			buf += this.grid.lineY; // Прибавка линий
 		}
 		// Цвет для сетки
-		this.screen.ctx.strokeStyle = "#ff8080";
+		this.screen.ctx.strokeStyle = this.grid.color;
 		 // Отрисовка линии
 		this.screen.ctx.stroke();
 	}

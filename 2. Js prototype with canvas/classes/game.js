@@ -56,6 +56,9 @@ class Game {
 	// Обработка событий игры
 	eventHandling() {
 
+		// Обработка событий мыши интерфейса
+		this.gui.eventHandling();
+
 	}
 
 	// Обновление данных игры
@@ -63,8 +66,6 @@ class Game {
 		// Обработка событий игры
 		this.eventHandling();
 
-		// Обновление данных интерфейса
-		// this.gui.update();
 	}
 
 	// Отрисовка данных игры
@@ -72,19 +73,19 @@ class Game {
 
 		// Экран меню
 		if(this.loop.main_menu_screen) {
-			// Отрисовка интерфейса меню
+			// Отрисовка интерфейса интерфейса меню
 			this.gui.rendering_menu();
 		}
 
 		// Экран загрузки
 		if(this.loop.load_screen) {
-			// Отрисовка экрана загрузки
+			// Отрисовка интерфейса экрана загрузки
 			this.gui.rendering_load();
 		}
 
 		// Экран игры
 		if(this.game_screen) {
-			// Отрисовка экрана игры
+			// Отрисовка интерфейса экрана игры
 			this.gui.rendering_game();
 		}
 
