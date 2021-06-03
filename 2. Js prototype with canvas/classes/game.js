@@ -29,9 +29,8 @@ class Game {
 		if(this.screen.height > window.innerHeight)
 			this.screen.height = window.innerHeight;
 
-		// Создание экземпляра экранов игры
-		this.loop = new Loop;
-		this.loop.main_menu_screen = true;
+		// Главный экран игры
+		loop_screen.main_list.main_menu = true;
 
 		// Создание экземпляра интерфейса
 		this.gui = new GUI(this.screen);
@@ -72,26 +71,23 @@ class Game {
 	rendering() {
 
 		// Экран меню
-		if(this.loop.main_menu_screen) {
+		if(loop_screen.main_list.main_menu) {
 			// Отрисовка интерфейса интерфейса меню
 			this.gui.rendering_menu();
 		}
 
 		// Экран загрузки
-		if(this.loop.load_screen) {
+		if(loop_screen.load) {
 			// Отрисовка интерфейса экрана загрузки
 			this.gui.rendering_load();
 		}
 
 		// Экран игры
-		if(this.game_screen) {
+		if(loop_screen.game) {
 			// Отрисовка интерфейса экрана игры
 			this.gui.rendering_game();
 		}
-
-		// Глобальная карта
-		if(this.global_map_screen) {
-		}
+		
 	}
 
 }

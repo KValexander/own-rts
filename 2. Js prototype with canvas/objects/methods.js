@@ -9,4 +9,14 @@ let methods = {
 			return true;
 		else return false;
 	},
+
+	// Функция загрузки изображения
+	loadImage: function(src) {
+		// return new Promise((resolve) => {
+			const image = new Image();
+			image.src = src;
+			return image;
+		// 	image.onload = () => resolve(image);
+		// });
+	}
 };
