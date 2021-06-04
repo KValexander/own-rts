@@ -156,12 +156,12 @@ class GUI {
 		info.rendered 		= false; 									// отрисовка
 		info.text 			= text; 									// текст
 		info.textColor 		= "white"; 									// цвет текста
-		info.fillColor 		= "rgba(0, 0, 0, 0.7)"; 						// цвет заливки
+		info.fillColor 		= "rgba(0, 0, 0, 0.7)"; 					// цвет заливки
 		info.strokeColor 	= "black"; 									// цвет рамки
-		info.width 			= this.grid.lineX * 5.75; 						// ширина
+		info.width 			= this.grid.lineX * 5.75; 					// ширина
 		info.height 		= 10; 										// высота
-		info.x 				= this.grid.lineX * 10; 					// отступ по x
-		info.y 				= this.grid.lineY * 0.5; 					// отступ по y
+		info.x				= this.grid.lineX * 10; 					// отступ по x
+		info.y				= this.grid.lineY * 0.5; 					// отступ по y
 		info.lineWidth 		= 3; 										// ширина рамки
 		info.fontSize 		= 16; 										// ширина символа
 		info.fontFamily 	= "Arial"; 									// шрифт
@@ -170,7 +170,7 @@ class GUI {
 		info.textWidth 		= info.width - info.margin_left; 			// ширина текста
 		info.textX 			= info.x + info.margin_top; 				// отступ по x для текста
 		info.textY 			= info.y + info.margin_left; 				// отступ по y для текста
-		info.font 			= info.fontSize + "px " + info.fontFamily; // конкатинация
+		info.font 			= info.fontSize + "px " + info.fontFamily; 	// конкатинация
 		info.lineHeight 	= 20; 										// отступ между линиями текста
 		info.lineCount 		= 1; 										// количество линий текста
 		info.textLines 		= this.processingText(info);				// массив с линиями текста
