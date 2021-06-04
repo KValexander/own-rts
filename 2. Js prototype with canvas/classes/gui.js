@@ -1,3 +1,7 @@
+// Эту махину текста необходимо распределить по разным местам,
+// улучшить логику и привести к понятному виду.
+// На момент 04.06.2021 код подлежит улучшению.
+
 // Класс графического интерфейса
 class GUI {
 
@@ -15,18 +19,6 @@ class GUI {
 
 	// Объявление общих данных
 	initVariable() {
-		// Объект со всеми элементами интерфейса экрана
-		this.elements = {
-			button: [], // кнопки
-			surface: [], // поверхности
-			icon: [], // иконки
-			texture: [], // текстуры
-			bg: {}, // изображения заднего фона
-			popup: { // popup окна
-				info: {}, // информационное окно
-				menu: {}, // окно меню
-			}
-		};
 
 		// Сетка
 		this.grid = {
@@ -50,21 +42,41 @@ class GUI {
 
 	// Выбор инициализации экрана
 	changeInit(init, menu) {
-		// Очистка массивов объект элементов
-		this.elements.button = [];
-		this.elements.surface = [];
-		// Сокрытие popup окон
-		this.elements.popup = { info: {}, menu: {} };
+		// Объект со всеми элементами интерфейса экрана
+		this.elements = {
+			surface: [], // поверхности
+			texture: [], // текстуры
+			button: [], // кнопки
+			input: [], // текстовые поля
+			icon: [], // иконки
+			bg: {}, // изображения заднего фона
+			popup: { // popup окна
+				info: {}, // информационное окно
+				menu: {}, // окно меню
+				notice: {}, // окно уведомления
+			},
+		};
+
+
+		// Объект всех элементов
+		// Объект элементов с текущим выводом
+
+		// Настройка popup окон
+		this.configPopup("info");
+		this.configPopup("menu");
+		this.configPopup("notice");
+
+		// Задний фон для экрнов
+		this.elements.bg.menu = methods.loadImage("assets/bg_menu.jpg");
+		this.elements.bg.load = methods.loadImage("assets/bg_load.jpg");
 
 		if(init == "menu") this.initMenu(menu); // Главное меню
-		if(init == "load") this.initLoad(); // Экран загрузки
-		if(init == "game") this.initGame(); // Экран игры
+		else if(init == "load") this.initLoad(); // Экран загрузки
+		else if(init == "game") this.initGame(); // Экран игры
 	}
 
 	// Объявление данных для экрана меню
 	initMenu(menu) {
-		// Задний фон для меню
-		this.elements.bg.menu = methods.loadImage("assets/bg_menu.jpg");
 		
 		// Главный экран меню
 		if(menu == "main") {
@@ -84,7 +96,7 @@ class GUI {
 
 			// Добавление кнопок
 			this.addButton(4, "Одиночная компания", "#fff", "#050411", this.grid.lineX, this.grid.lineY * 2, this.grid.lineX * 3, this.grid.lineY);
-			this.addButton(5, "Своя битва", "#fff", "#050411", this.grid.lineX, this.grid.lineY * 4, this.grid.lineX * 3, this.grid.lineY);
+			this.addButton(5, "Своя битва", "#fff", "#050411", this.grid.lineX, this.grid.lineY * 4, this.grid.lineX * 3, this.grid.lineY, false);
 			this.addButton(6, "Вернуться", "#fff", "#050411", this.grid.lineX, this.grid.lineY * 6, this.grid.lineX * 3, this.grid.lineY);
 		}
 
@@ -102,7 +114,7 @@ class GUI {
 		}
 
 		// Экран настроек
-		if(menu == "option") {
+		if(menu == "option" || menu == "option_game" || menu == "option_graphics") {
 			// Добавление поверхностей
 			this.addSurface(1, "rgba(255,255,255,0.5)", this.grid.lineX * 0.5, this.grid.lineY * 1, this.grid.lineX * 4, this.grid.lineY * 7);
 
@@ -110,15 +122,28 @@ class GUI {
 			this.addButton(7, "Игра", "#fff", "#050411", this.grid.lineX, this.grid.lineY * 2, this.grid.lineX * 3, this.grid.lineY);
 			this.addButton(8, "Графика", "#fff", "#050411", this.grid.lineX, this.grid.lineY * 4, this.grid.lineX * 3, this.grid.lineY);
 			this.addButton(9, "Вернуться", "#fff", "#050411", this.grid.lineX, this.grid.lineY * 6, this.grid.lineX * 3, this.grid.lineY);
+			
+			// Экран настроек игры
+			if(menu == "option_game") {
+				// Добавление поверхностей
+				this.addSurface(2, "rgba(255, 255, 255, 0.5)", this.grid.lineX * 5, this.grid.lineY * 1, this.grid.lineX * 10.5, this.grid.lineY * 13);
+			}
+			// Экран настроек графики
+			if(menu == "option_graphics") {
+				// Добавление поверхностей
+				this.addSurface(2, "rgba(255, 255, 255, 0.5)", this.grid.lineX * 5, this.grid.lineY * 1, this.grid.lineX * 10.5, this.grid.lineY * 13);
+			}
+
 		}
 
 	}
 
 	// Экран загрузки
 	initLoad() {
-		// Задний фон для экрана загрузки
-		this.elements.bg.load = methods.loadImage("assets/bg_load.jpg");
-
+		// Добавление поверхностей
+		this.addSurface(3, "rgba(255,255,255,0.5)", this.grid.lineX * 6.5, this.grid.lineY * 13.5, this.grid.lineX * 3, this.grid.lineY * 2);
+		// Добавление кнопок
+		this.addButton(15, "Начать компанию", "#fff", "#050411", this.grid.lineX * 7, this.grid.lineY * 14, this.grid.lineX * 2, this.grid.lineY);
 	}
 
 	// Объявление данных для экрана игры
@@ -148,40 +173,55 @@ class GUI {
 	// Раздел всплывающего окна
 	// =================================
 
+	// Общая конфигурация popup окон
+	configPopup(type) {
+		let popup = this.elements.popup[type];
+		let width, x, y;
+
+		switch(type) {
+			case "info": width = 5.75; x = 10; 	y = 0.5; break;
+			case "menu": break;
+			case "notice": break;
+		}
+
+		popup.id			= 1470; 									// уникальное id
+		popup.rendering 	= false; 									// продолжение отрисовки
+		popup.rendered 		= false; 									// отрисовка
+		popup.text 			= ""; 										// текст
+		popup.textColor 	= "white"; 									// цвет текста
+		popup.fillColor 	= "rgba(0, 0, 0, 0.7)"; 					// цвет заливки
+		popup.strokeColor 	= "black"; 									// цвет рамки
+		popup.width 		= this.grid.lineX * width; 					// ширина
+		popup.height 		= 10; 										// высота
+		popup.x				= this.grid.lineX * x; 						// отступ по x
+		popup.y				= this.grid.lineY * y; 						// отступ по y
+		popup.lineWidth 	= 3; 										// ширина рамки
+		popup.fontSize 		= 16; 										// ширина символа
+		popup.fontFamily 	= "Arial"; 									// шрифт
+		popup.margin		= 10;										// отступ с краёв для текста
+		popup.textWidth 	= popup.width - popup.margin; 				// ширина текста
+		popup.textX 		= popup.x + popup.margin; 					// отступ по x для текста
+		popup.textY 		= popup.y + popup.margin; 					// отступ по y для текста
+		popup.font 			= popup.fontSize + "px " + popup.fontFamily;// конкатинация
+		popup.lineHeight 	= 20; 										// отступ между линиями текста
+		popup.lineCount 	= 1; 										// количество линий текста
+		popup.textLines 	= "";										// массив с линиями текста
+	}
+
 	// Конфигурация info popup окна
 	configPopupInfo(text) {
 		let info 			= this.elements.popup.info;
-		info.id				= 1470; 									// уникальное id
 		info.rendering 		= true; 									// продолжение отрисовки
-		info.rendered 		= false; 									// отрисовка
 		info.text 			= text; 									// текст
-		info.textColor 		= "white"; 									// цвет текста
-		info.fillColor 		= "rgba(0, 0, 0, 0.7)"; 					// цвет заливки
-		info.strokeColor 	= "black"; 									// цвет рамки
-		info.width 			= this.grid.lineX * 5.75; 					// ширина
-		info.height 		= 10; 										// высота
-		info.x				= this.grid.lineX * 10; 					// отступ по x
-		info.y				= this.grid.lineY * 0.5; 					// отступ по y
-		info.lineWidth 		= 3; 										// ширина рамки
-		info.fontSize 		= 16; 										// ширина символа
-		info.fontFamily 	= "Arial"; 									// шрифт
-		info.margin_top		= 10;										// отступ сверху для текста
-		info.margin_left	= 10;										// отступ слева для текста
-		info.textWidth 		= info.width - info.margin_left; 			// ширина текста
-		info.textX 			= info.x + info.margin_top; 				// отступ по x для текста
-		info.textY 			= info.y + info.margin_left; 				// отступ по y для текста
-		info.font 			= info.fontSize + "px " + info.fontFamily; 	// конкатинация
-		info.lineHeight 	= 20; 										// отступ между линиями текста
-		info.lineCount 		= 1; 										// количество линий текста
 		info.textLines 		= this.processingText(info);				// массив с линиями текста
 		// Вычисление высоты в зависимости от текста
 		let coefficient = (info.lineCount == 1) ? 1.5 : 2;
-		info.height = this.getTextHeight(info.text, info.textWidth, info.fontSize) + info.margin_top * coefficient;
+		info.height = this.getTextHeight(info.text, info.textWidth, info.fontSize) + info.margin * coefficient;
 	}
 
-	// Конфигурация menu popup окна
-	configPopupMenu() {
-
+	// Конфигурация notice popup окна
+	configPopupNotice() {
+		// let notice = this.elements.
 	}
 
 	// Вывод info popup окна
@@ -202,17 +242,15 @@ class GUI {
 		// Шрифт
 		this.screen.ctx.font = data.font;
 		// Отрисовка текста
-		// this.wordProcessing(data.text, data.textWidth, data.textX, data.textY);
 		this.outText(data.textLines, data.textX, data.textY, data.lineHeight);
 	}
 
-	// Вывод menu popup окна
-	outPopupMenu() {
+	// Вывод alert popup окна
+	outPopupNotice() {
 
 	}
 
 	// Подсчёт количества линий текста
-	// Рабочее, неоптимизированное
 	processingText(data) {
 		// Массив с линиями
 		let lines = [];
@@ -241,7 +279,6 @@ class GUI {
 	}
 
 	// Вывод текста
-	// Рабочее
 	outText(arr_lines, x, y, lineHeight) {
 		// Цикл вывода линий текста
 		for(let i = 0; i < arr_lines.length; i++) {
@@ -259,35 +296,6 @@ class GUI {
 		let height = div.offsetHeight;
 		div.outerHTML = "";
 		return height;
-	}
-
-	// Обработка и отрисовка текста
-	// Рабочее, неиспользуемое, альтернатива processingText и outText
-	wordProcessing(text, width, x, y) {
-		// Получение слов
-		let words = text.split(" "); // получение слов из текста
-		let count = words.length; // количество слов
-		let line = ""; // одна линия вывода
-		this.elements.popup.info.lineCount = 0; // количество линий
-		// Работа со словами
-		for(let i = 0; i < count; i++) {
-			let testLine = line + words[i] + " "; // линия вывода
-			let testWidth = this.screen.ctx.measureText(testLine).width; // ширина линии
-			if(testWidth > width) { // если больше максимальной
-				this.screen.ctx.fillText(line, x, y); // вывод линии
-				line = words[i] + " "; // начало следующей линии
-				this.elements.popup.info.lineCount += 1; // количество линий
-				y += this.elements.popup.info.lineHeight; // отступы между линиями
-			} else {
-				line = testLine; // продолжение увеличения линии
-			}
-		}
-		// Если недостаточно текста для одной линии
-		if(this.elements.popup.info.lineCount == 0)
-			this.elements.popup.info.lineCount = 1;
-
-		// Вывод текста
-		this.screen.ctx.fillText(line, x, y);
 	}
 	// =================================
 
@@ -322,6 +330,11 @@ class GUI {
 		this.elements.surface.push(surface);
 	}
 
+	// Добавление текстовых полей
+	addInput() {
+		let input = {};
+	}
+
 	// Добавление кнопки
 	addButton(id, text, color_text, color_rect, x, y, width, height, access) {
 		// Объект кнопки
@@ -340,6 +353,11 @@ class GUI {
 		// button.rendering 	= false; 			// состояние отрисовки
 		// Добавление кнопки в массив кнопок
 		this.elements.button.push(button);
+	}
+
+	// Создание иконок
+	createIcon(data) {
+
 	}
 
 	// Создание поверхности
@@ -443,6 +461,9 @@ class GUI {
 							case 11: case 12:
 								self.configPopupInfo(text_storage.error.availability.company);
 								break;
+							case 5:
+								self.configPopupInfo(text_storage.error.availability.button);
+								break;
 						}
 					}
 				} else {
@@ -470,8 +491,30 @@ class GUI {
 							case 1: self.changeInit("menu", "company"); break;
 							// Если нажата кнопка "Настройки"
 							case 2: self.changeInit("menu", "option"); break;
+							// Если нажата кнопка "Выход"
+							case 3: window.close(); break;
 							// Если нажата кнопка "Одиночная компания"
 							case 4: self.changeInit("menu", "company_choise"); break;
+							// Если нажата кнопка "Игра" на экране "Настройки"
+							case 7: self.changeInit("menu", "option_game"); break;
+							// Если нажата кнопка "Графика" на экране "Настройки"
+							case 8: self.changeInit("menu", "option_graphics"); break;
+
+							// Если нажата кнопка "Компания империи"
+							case 10:
+								loop_screen.main_list.main_menu = false;
+								loop_screen.load_list.load = true;
+								self.changeInit("load");
+								break; // косипоша, break забыл. *смех*
+
+							// Если нажата кнопка "Начать компанию"
+							case 15:
+								loop_screen.main_list.main_menu = true;
+								loop_screen.load_list.load = false;
+								self.changeInit("menu", "main");
+								self.configPopupInfo("Что-то пошло не так");
+								break;
+
 							// Если нажата кнопка "Вернуться" на экранах Настроек и Компании
 							case 6: case 9: self.changeInit("menu", "main"); break;
 							// Если нажата кнопка "Вернуться" в окне одиночных компаний
@@ -488,8 +531,7 @@ class GUI {
 		document.onkeydown = function(e) {
 			// Если нажата клавиша RrКк
 			if(e.code == "KeyR") {
-				self.popup.rendering = true;
-				console.log(self.popup.rendering);
+				self.elements.popup.info.rendering = false;
 			}
 		}
 	}
@@ -497,14 +539,13 @@ class GUI {
 
 	// Раздел отрисовки экранов
 	// =================================
-
 	// Отрисовка данных главного меню
 	rendering_menu() {
 		// Задний фон
 		this.screen.ctx.drawImage(this.elements.bg.menu, 0, 0, this.screen.width, this.screen.height);
 
 		// Отрисовка сетки
-		this.drawGrid();
+		// this.drawGrid();
 
 		// Отрисовка поверхностей
 		for(let i = 0; i < this.elements.surface.length; i++)
@@ -514,13 +555,26 @@ class GUI {
 		for(let i = 0; i < this.elements.button.length; i++)
 			this.createButton(this.elements.button[i]);
 
-		// Отрисовка popup окна
+		// Отрисовка info popup окна
 		if(this.elements.popup.info.rendering)
 			this.outPopupInfo(this.elements.popup.info);
 	}
 
 	// Отрисовка данных экрана загрузки
 	rendering_load() {
+		// Задний фон
+		this.screen.ctx.drawImage(this.elements.bg.load, 0, 0, this.screen.width, this.screen.height);
+
+		// Отрисовка сетки
+		this.drawGrid();
+
+		// Отрисовка поверхностей
+		for(let i = 0; i < this.elements.surface.length; i++)
+			this.createSurface(this.elements.surface[i]);
+		// Отрисовка кнопок
+		for(let i = 0; i < this.elements.button.length; i++)
+			this.createButton(this.elements.button[i]);
+
 
 	}
 

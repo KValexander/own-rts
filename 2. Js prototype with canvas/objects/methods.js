@@ -12,7 +12,7 @@ let methods = {
 
 	// Функция загрузки изображения
 	loadImage: function(src) {
-		const image = new Image();
+		let image = new Image();
 		image.src = src;
 		return image;
 	},

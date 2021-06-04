@@ -11,6 +11,9 @@ class Game {
 
 	// Объявление переменных
 	initVariable() {
+		// Объект с конфигурациями настроек игры
+		this.option = {};
+
 		// Объет с данными экрана
 		this.screen = {
 			canvas: document.querySelector("#canvas"), // canvas
@@ -18,9 +21,6 @@ class Game {
 			height: 1080, // высота окна
 		};
 		this.screen.ctx = this.screen.canvas.getContext("2d");
-
-		// Объект с конфигурациями настроек игры
-		this.option = {};
 
 		// Данные проверки нужны, если заданы определённые
 		// параметры ширины и высоты
@@ -80,13 +80,13 @@ class Game {
 		}
 
 		// Экран загрузки
-		if(loop_screen.load) {
+		if(loop_screen.load_list.load) {
 			// Отрисовка интерфейса экрана загрузки
 			this.gui.rendering_load();
 		}
 
 		// Экран игры
-		if(loop_screen.game) {
+		if(loop_screen.game_list.game) {
 			// Отрисовка интерфейса экрана игры
 			this.gui.rendering_game();
 		}
