@@ -14,10 +14,13 @@ class Game {
 		// Объет с данными экрана
 		this.screen = {
 			canvas: document.querySelector("#canvas"), // canvas
-			width: 1280, // ширина окна
-			height: 720, // высота окна
+			width: 1920, // ширина окна
+			height: 1080, // высота окна
 		};
 		this.screen.ctx = this.screen.canvas.getContext("2d");
+
+		// Объект с конфигурациями настроек игры
+		this.option = {};
 
 		// Данные проверки нужны, если заданы определённые
 		// параметры ширины и высоты

@@ -22,11 +22,10 @@ class GUI {
 			icon: [], // иконки
 			texture: [], // текстуры
 			bg: {}, // изображения заднего фона
-		};
-
-		// Объект popup окна
-		this.popup = {
-			rendering: false,
+			popup: { // popup окна
+				info: {}, // информационное окно
+				menu: {}, // окно меню
+			}
 		};
 
 		// Сетка
@@ -54,8 +53,8 @@ class GUI {
 		// Очистка массивов объект элементов
 		this.elements.button = [];
 		this.elements.surface = [];
-		// Сокрытие popup окна
-		this.popup.rendering = false;
+		// Сокрытие popup окон
+		this.elements.popup = { info: {}, menu: {} };
 
 		if(init == "menu") this.initMenu(menu); // Главное меню
 		if(init == "load") this.initLoad(); // Экран загрузки
@@ -149,21 +148,50 @@ class GUI {
 	// Раздел всплывающего окна
 	// =================================
 
-	// Конфигурация popup окна
-	configPopup(text, x, y) {
-		this.popup.text = text;
-		this.popup.x = x;
-		this.popup.y = y;
+	// Конфигурация info popup окна
+	configPopupInfo(text) {
+		let info 			= this.elements.popup.info;
+		info.id				= 1470; 									// уникальное id
+		info.rendering 		= true; 									// продолжение отрисовки
+		info.rendered 		= false; 									// отрисовка
+		info.text 			= text; 									// текст
+		info.textColor 		= "white"; 									// цвет текста
+		info.fillColor 		= "rgba(0, 0, 0, 0.7)"; 						// цвет заливки
+		info.strokeColor 	= "black"; 									// цвет рамки
+		info.width 			= this.grid.lineX * 5.75; 						// ширина
+		info.height 		= 10; 										// высота
+		info.x 				= this.grid.lineX * 10; 					// отступ по x
+		info.y 				= this.grid.lineY * 0.5; 					// отступ по y
+		info.lineWidth 		= 3; 										// ширина рамки
+		info.fontSize 		= 16; 										// ширина символа
+		info.fontFamily 	= "Arial"; 									// шрифт
+		info.margin_top		= 10;										// отступ сверху для текста
+		info.margin_left	= 10;										// отступ слева для текста
+		info.textWidth 		= info.width - info.margin_left; 			// ширина текста
+		info.textX 			= info.x + info.margin_top; 				// отступ по x для текста
+		info.textY 			= info.y + info.margin_left; 				// отступ по y для текста
+		info.font 			= info.fontSize + "px " + info.fontFamily; // конкатинация
+		info.lineHeight 	= 20; 										// отступ между линиями текста
+		info.lineCount 		= 1; 										// количество линий текста
+		info.textLines 		= this.processingText(info);				// массив с линиями текста
+		// Вычисление высоты в зависимости от текста
+		let coefficient = (info.lineCount == 1) ? 1.5 : 2;
+		info.height = this.getTextHeight(info.text, info.textWidth, info.fontSize) + info.margin_top * coefficient;
 	}
 
-	// Вывод popup окна
-	outPopup() {
+	// Конфигурация menu popup окна
+	configPopupMenu() {
+
+	}
+
+	// Вывод info popup окна
+	outPopupInfo(data) {
 		// Цвет заливки
-		this.screen.ctx.fillStyle = "rgba(0,0,0,0.5)";
-		this.screen.ctx.fillRect(this.popup.x - 10, this.popup.y - 14, 550, 40);
+		this.screen.ctx.fillStyle = data.fillColor;
+		this.screen.ctx.fillRect(data.x, data.y, data.width, data.height);
 		// Цвет обводки
-		this.screen.ctx.fillStyle = "#000";
-		this.screen.ctx.strokeRect(this.popup.x - 10, this.popup.y - 14, 550, 40);
+		this.screen.ctx.fillStyle = data.strokeColor;
+		this.screen.ctx.strokeRect(data.x, data.y, data.width, data.height);
 
 		// Горизонтальное позиционирование текста
 		this.screen.ctx.textAlign = "start";
@@ -172,22 +200,109 @@ class GUI {
 		// Цвет текста
 		this.screen.ctx.fillStyle = "white";
 		// Шрифт
-		this.screen.ctx.font = "12pt Arial";
+		this.screen.ctx.font = data.font;
 		// Отрисовка текста
-		this.screen.ctx.fillText(this.popup.text, this.popup.x, this.popup.y);
+		// this.wordProcessing(data.text, data.textWidth, data.textX, data.textY);
+		this.outText(data.textLines, data.textX, data.textY, data.lineHeight);
 	}
+
+	// Вывод menu popup окна
+	outPopupMenu() {
+
+	}
+
+	// Подсчёт количества линий текста
+	// Рабочее, неоптимизированное
+	processingText(data) {
+		// Массив с линиями
+		let lines = [];
+		// Получение слов
+		let words = data.text.split(" "); // получение слов из текста
+		let count = words.length; // количество слов
+		let line = ""; // одна линия вывода
+		// Работа со словами
+		for(let i = 0; i <= count; i++) {
+			let testLine = line + words[i] + " "; // линия вывода
+			let testWidth = this.screen.ctx.measureText(testLine).width; // ширина линии
+			if(testWidth > data.textWidth) { // если больше максимальной ширины
+				lines.push(line);
+				data.lineCount += 1; // количество линий
+				line = words[i] + " "; // начало следующей линии
+			} else {
+				line = testLine; // продолжение увеличения линии
+			}
+			if(i == count) {
+				line = line.replace("undefined", " ");
+				lines.push(line);
+			}
+		}
+		// Возвращение массива с линиями
+		return lines;
+	}
+
+	// Вывод текста
+	// Рабочее
+	outText(arr_lines, x, y, lineHeight) {
+		// Цикл вывода линий текста
+		for(let i = 0; i < arr_lines.length; i++) {
+			this.screen.ctx.fillText(arr_lines[i], x, y); // вывод линии
+			y += lineHeight;
+		}
+	}
+
+	// Получение высоты текста
+	getTextHeight(text, width, size) {
+		let div = document.createElement("div");
+		document.body.append(div);
+		div.innerHTML = text;
+		div.style = "width: "+ width +"px; font-size: "+ size +"px;";
+		let height = div.offsetHeight;
+		div.outerHTML = "";
+		return height;
+	}
+
+	// Обработка и отрисовка текста
+	// Рабочее, неиспользуемое, альтернатива processingText и outText
+	wordProcessing(text, width, x, y) {
+		// Получение слов
+		let words = text.split(" "); // получение слов из текста
+		let count = words.length; // количество слов
+		let line = ""; // одна линия вывода
+		this.elements.popup.info.lineCount = 0; // количество линий
+		// Работа со словами
+		for(let i = 0; i < count; i++) {
+			let testLine = line + words[i] + " "; // линия вывода
+			let testWidth = this.screen.ctx.measureText(testLine).width; // ширина линии
+			if(testWidth > width) { // если больше максимальной
+				this.screen.ctx.fillText(line, x, y); // вывод линии
+				line = words[i] + " "; // начало следующей линии
+				this.elements.popup.info.lineCount += 1; // количество линий
+				y += this.elements.popup.info.lineHeight; // отступы между линиями
+			} else {
+				line = testLine; // продолжение увеличения линии
+			}
+		}
+		// Если недостаточно текста для одной линии
+		if(this.elements.popup.info.lineCount == 0)
+			this.elements.popup.info.lineCount = 1;
+
+		// Вывод текста
+		this.screen.ctx.fillText(line, x, y);
+	}
+	// =================================
+
 
 	// Раздел добавления и создания элементов экрана
 	// =================================
 
 	// Добавление иконок
 	addIcon(id, src, x, y, width, height) {
-		let icon = {};
-		icon.id = id;
-		icon.image = method.loadImage(src);
-		icon.x = x;
-		icon.y = y;
-		icon.width = width;
+		let icon 	= {};
+		icon.id 	= id;
+		icon.image 	= method.loadImage(src);
+		icon.x 		= x;
+		icon.y 		= y;
+		icon.width 	= width;
 		icon.height = height;
 		this.elements.icon.push(icon);
 	}
@@ -195,13 +310,13 @@ class GUI {
 	// Добавление поверхностей
 	addSurface(id, color, x, y, width, height) {
 		// Объект поверхности
-		let surface = {};
-		surface.id = id; // id
-		surface.color = color; // цвет
-		surface.x = x; // начало по x
-		surface.y = y; // начало по y
-		surface.width = width; // ширина
-		surface.height = height; // высота
+		let surface 	= {};
+		surface.id 		= id; 		// id
+		surface.color 	= color; 	// цвет
+		surface.x 		= x; 		// начало по x
+		surface.y 		= y; 		// начало по y
+		surface.width 	= width; 	// ширина
+		surface.height 	= height; 	// высота
 		// surface.rendering = false; // состояние отрисовки
 		// Добавление поверхности в массив поверхностей
 		this.elements.surface.push(surface);
@@ -210,19 +325,19 @@ class GUI {
 	// Добавление кнопки
 	addButton(id, text, color_text, color_rect, x, y, width, height, access) {
 		// Объект кнопки
-		let button = {}; // объект кнопки
-		button.id = id; // id кнопки
-		button.text = text; // надпись кнопки
-		button.color_text = color_text; // цвет надписи
-		button.color_rect = color_rect; // цвет области кнопки
-		button.x = x; // стартовая позиция по горизонтали
-		button.y = y; // стартовая позиция по вертикали
-		button.width = width; // ширина
-		button.height = height; // высота
-		button.hover = false; // состояние наведения
-		button.click = false; // состояние нажатия
-		button.access = access ?? true; // состояние доступа
-		// button.rendering = false; // состояние отрисовки
+		let button 			= {}; 				// объект кнопки
+		button.id 			= id; 				// id кнопки
+		button.text 		= text; 			// надпись кнопки
+		button.color_text 	= color_text; 		// цвет надписи
+		button.color_rect 	= color_rect; 		// цвет области кнопки
+		button.x 			= x; 				// стартовая позиция по горизонтали
+		button.y 			= y; 				// стартовая позиция по вертикали
+		button.width 		= width; 			// ширина
+		button.height 		= height; 			// высота
+		button.hover 		= false; 			// состояние наведения
+		button.click 		= false; 			// состояние нажатия
+		button.access 		= access ?? true; 	// состояние доступа
+		// button.rendering 	= false; 			// состояние отрисовки
 		// Добавление кнопки в массив кнопок
 		this.elements.button.push(button);
 	}
@@ -291,6 +406,8 @@ class GUI {
 		let self = this;
 		// Обработка событий мыши
 		this.mouseEventHandling(this.elements.button, self);
+		// Обработка нажатия на кливиши
+		this.keydownEventHandling(self)
 	}
 
 	// Обработка событий мыши
@@ -301,8 +418,13 @@ class GUI {
 		this.screen.canvas.onmousemove = function(e) {
 			// Цикл проверки наведения на кнопку
 			for(let i = 0; i < el.length; i++) {
+				// Проверка наведени на info popup окна при его отображении
+				if(methods.collision(self.elements.popup.info, e.offsetX, e.offsetY) && self.elements.popup.info.rendering) {
+					el[i].hover = false;
+					return; // отключение отрисовки
+				}
 				// Проверка наведения на кнопку
-				if(methods.collisionButton(el[i], e.offsetX, e.offsetY)) {
+				if(methods.collision(el[i], e.offsetX, e.offsetY)) {
 					// Если кнопка доступна
 					if(el[i].access) {
 						// Активация состояния наведения
@@ -311,8 +433,7 @@ class GUI {
 						switch(el[i].id) {
 							// При наведение на кнопку "Компания Империи"
 							case 10:
-								self.configPopup(text_storage.company_menu.empire, e.offsetX, e.offsetY);
-								self.popup.rendering = true;
+								self.configPopupInfo(text_storage.company_menu.empire);
 								break;
 						}
 					} else {
@@ -320,14 +441,11 @@ class GUI {
 						switch(el[i].id) { // перебор id кнопок
 							// Если недоступны кнопки "Компания Союза Рас" и "Компания Механикусов"
 							case 11: case 12:
-								self.configPopup(text_storage.error.availability.company, e.offsetX, e.offsetY);
-								self.popup.rendering = true;
+								self.configPopupInfo(text_storage.error.availability.company);
 								break;
 						}
 					}
 				} else {
-					// Сокрытие popup окна
-					// self.popup.rendering = false;
 					// Деактивация состояния наведения
 					el[i].hover = false;
 				}
@@ -336,10 +454,14 @@ class GUI {
 
 		// Нажатие мыши на окне
 		this.screen.canvas.onclick = function(e) {
+			// Проверка нажатия на info popup окно
+			if(methods.collision(self.elements.popup.info, e.offsetX, e.offsetY))
+				self.elements.popup.info.rendering = false; // отключение отрисовки
+
 			// Цикл проверки нажатия на кнопку
 			for(let i = 0; i < el.length; i++) {
 				// Проверка нажатия на кнопку
-				if(methods.collisionButton(el[i], e.offsetX, e.offsetY)) {
+				if(methods.collision(el[i], e.offsetX, e.offsetY)) {
 					// Если кнопка доступна
 					if(el[i].access) {
 						// Перебор id кнопок
@@ -357,6 +479,17 @@ class GUI {
 						}
 					}
 				}
+			}
+		}
+	}
+
+	// Обработка событий нажатия на клавиши
+	keydownEventHandling(self) {
+		document.onkeydown = function(e) {
+			// Если нажата клавиша RrКк
+			if(e.code == "KeyR") {
+				self.popup.rendering = true;
+				console.log(self.popup.rendering);
 			}
 		}
 	}
@@ -382,8 +515,8 @@ class GUI {
 			this.createButton(this.elements.button[i]);
 
 		// Отрисовка popup окна
-		if(this.popup.rendering)
-			this.outPopup();
+		if(this.elements.popup.info.rendering)
+			this.outPopupInfo(this.elements.popup.info);
 	}
 
 	// Отрисовка данных экрана загрузки
