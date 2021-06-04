@@ -1,0 +1,19 @@
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+body {
+	background-color: #000;
+	font-family: Arial;
+	overflow: hidden;
+}
+
+canvas#canvas {
+	position: relative;
+	display: block;
+	margin: auto;
+	background-color: #050411;
+	cursor: url("assets/cursor/Arrow.cur"), auto;
+}

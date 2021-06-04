@@ -1,0 +1,52 @@
+// ===========================
+	// Предполагаемые файлы для реализации
+
+	// Html
+	- index.html
+
+	// Style
+	- style.css
+	
+	// Scripts
+	- script.js
+
+	// Objects
+	- loop.js
+	- options.js
+	- animate.js
+	- grid.js
+	- camera.js
+	- tasks.js
+	- systemText.js
+	- replicas.js
+	- elements.js
+	- popup.js
+	- rendering.js
+	- eventList.js
+	- map.js
+	- extra.js
+	
+
+	// Classes
+	- game.js
+	- option.js
+	- gui.js
+	- menu.js
+	- load.js
+	- play.js
+	- globalMap.js
+	- task.js
+	- map.js
+	- player.js
+	- faction.js
+	- unit.js
+	- hero.js
+	- building.js
+	- misk.js
+
+	// Other
+	- 
+
+// ===========================
+	// Реализовано
+	
