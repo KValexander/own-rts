@@ -22,6 +22,7 @@
 	- elements.js
 	- popup.js
 	- rendering.js
+	- collision.js
 	- eventList.js
 	- map.js
 	- extra.js
@@ -30,12 +31,12 @@
 	// Classes
 	- game.js
 	- option.js
-	- gui.js
 	- menu.js
 	- load.js
 	- play.js
 	- globalMap.js
 	- task.js
+	- gui.js
 	- map.js
 	- player.js
 	- faction.js

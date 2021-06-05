@@ -10,10 +10,10 @@ body {
 	overflow: hidden;
 }
 
-canvas#canvas {
+canvas {
 	position: relative;
 	display: block;
 	margin: auto;
-	background-color: #050411;
+	background-color: #fff;
 	cursor: url("assets/cursor/Arrow.cur"), auto;
 }
