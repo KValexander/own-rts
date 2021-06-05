@@ -69,7 +69,7 @@ let rendering = {
 	},
 
 	// Добавление справочника
-	addDirectory: function(id, text, list, x, y, width, height) {
+	addDirectory: function(id, text, list, x, y, width, height, access) {
 		// Объект справочника
 		let directory = {};
 		directory.id = id; // id справочника
@@ -81,7 +81,7 @@ let rendering = {
 		directory.height = height; // высота
 		directory.hover = false; // состояние наведения
 		directory.click = false; // состояние нажатия
-		directory.access = false; // состояние доступа
+		directory.access = access ?? true; // состояние доступа
 		// Добавление справочника в массив справочников
 		this.directory.push(directory);
 	},
@@ -139,11 +139,15 @@ let rendering = {
 
 	// Создание справочника (это будет очень интересно)
 	createDirectory: function(data, canvas) {
+		// Заливка справочника
 		let directory = new Path2D();
-		directory.rect(data.x, data.y, data.width, data.height);
-		directory.id = data.id;
-		canvas.ctx.fillStyle = "rgba(0,0,0,0.7)";
-		canvas.ctx.fill(directory);
+		// При нажатом справочнике
+		if(data.click) directory.rect(data.x, data.y, data.width, data.height + grid.lineY * 5);
+		// В иных случаях
+		else directory.rect(data.x, data.y, data.width, data.height);
+		directory.id = data.id; // id
+		canvas.ctx.fillStyle = "rgba(0,0,0,0.7)"; // цвет
+		canvas.ctx.fill(directory); // отрисовка
 
 		// Цвет текста
 		canvas.ctx.fillStyle = "white";
@@ -154,14 +158,26 @@ let rendering = {
 		// Шрифт и размер текста
 		canvas.ctx.font = "16pt Arial";
 		// Отрисовка текста
-		canvas.ctx.fillText(data.text, data.x + data.width / 2, data.y + data.height / 2);
+		canvas.ctx.fillText(data.text, data.x + data.width / 2 - grid.lineX, data.y + data.height / 2);
+
+		// let y = grid.lineY;
+		// let lineHeight = 15;
+		// // При нажатом справочнике
+		// if(data.click) {
+		// 	for(let key in data.line) {
+		// 		canvas.ctx.fillText(data.line[key], data.x + data.width / 2 - grid.lineX, data.y + y);
+		// 		y += grid.lineY;
+		// 	}
+		// }
+
+		// Избражение стрелки
+		let image = new Image();
+		image.src = "data/assets/arrow.png";
+		canvas.ctx.drawImage(image, data.x + (data.x - grid.lineX * 2.5), data.y, grid.lineX * 0.5, data.height);
 
 		// Рамка для поверхности
-		canvas.ctx.shadowBlur = 15; // тень
-		canvas.ctx.shadowColor = "#050411"; // цвет тени
 		canvas.ctx.strokeStyle = "#050411"; // цвет рамки
 		canvas.ctx.lineWidth = 3; // ширина линии
 		canvas.ctx.strokeRect(data.x, data.y, data.width, data.height); // рамка
-		canvas.ctx.shadowBlur = 0; // очистка тени
 	},
 };

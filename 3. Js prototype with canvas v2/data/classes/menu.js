@@ -87,8 +87,7 @@ class Menu {
 			rendering.addSurface(2, "rgba(255, 255, 255, 0.5)", grid.lineX * 5, grid.lineY, grid.lineX * 10.5, grid.lineY * 13);
 
 			// Добавление справочников
-			rendering.addDirectory(1, "Разрешение экрана", directory.screen_resolution, grid.lineX * 6, grid.lineY * 2, grid.lineX * 3, grid.lineY);
-			console.log(rendering.directory);
+			rendering.addDirectory(1, "Разрешение экрана", directory.screen_resolution, grid.lineX * 6, grid.lineY * 2, grid.lineX * 4, grid.lineY);
 		}
 
 	}

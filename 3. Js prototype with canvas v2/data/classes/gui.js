@@ -54,10 +54,15 @@ class GUI {
 			// Сокрытие popup окна при нажатии
 			eventList.hidePopup(e.offsetX, e.offsetY);
 
-			// Действие на нажатую кнопку
+			// Нажатие на кнопку
 			eventList.clickButton(function(btn) {
 				// Переход к списку действий нажатия
 				self.actionClickList(btn.id, btn.slug);
+			}, e.offsetX, e.offsetY);
+
+			// Нажатие на справочник
+			eventList.clickDirectory(function(dir) {
+				console.log(dir);
 			}, e.offsetX, e.offsetY);
 		}
 	}
@@ -65,11 +70,17 @@ class GUI {
 	// Обработка движения мыши
 	mouseMove(self) {
 		this.canvas.cnv.onmousemove = function(e) {
-			// Действие на наведённую кнопку
+			// Наведение на кнопку
 			eventList.aimButton(function(btn) {
 				// Переход к списку действий наведения
 				self.actionAimList(btn.id, btn.slug);
 			}, e.offsetX, e.offsetY);
+
+			// Наведение на справочник
+			eventList.aimDirectory(function(dir) {
+
+			}, e.offsetX, e.offsetY);
+
 		}
 	}
 
