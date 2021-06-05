@@ -22,6 +22,7 @@
 	- elements.js
 	- popup.js
 	- rendering.js
+	- directory.js
 	- collision.js
 	- eventList.js
 	- map.js

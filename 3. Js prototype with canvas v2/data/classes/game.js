@@ -28,7 +28,7 @@ class Game {
 		document.querySelector("body").style = "height: " + options.sizeHeight + "px;";
 		// Центрирование окна игры
 		if(options.sizeHeight < window.innerHeight) {
-			let va = window.innerHeight / 2 - options.sizeHeight / 1.8;
+			let va = window.innerHeight / 2 - options.sizeHeight / 2;
 			document.querySelector("canvas").style = "top: " + va + "px;";
 		}
 	}
@@ -46,6 +46,9 @@ class Game {
 
 		// Обработка событий
 		this.eventHandling();
+
+		// Обновление данных интерфейса
+		this.gui.update();
 		
 	}
 

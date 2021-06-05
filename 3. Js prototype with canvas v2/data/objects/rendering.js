@@ -1,18 +1,27 @@
 // Объект с текущими элементами отрисовки на экране
 let rendering = {
-	bg: "", 		// задний фон
-	icon: [], 		// иконки
-	button: [], 	// кнопки
-	surface: [], 	// поверхности
-	texture: [], 	// текстуры
+	bg: 		"", 	// задний фон
+	icon: 		[], 	// иконки
+	button: 	[], 	// кнопки
+	surface: 	[], 	// поверхности
+	texture: 	[], 	// текстуры
+	directory: 	[], 	// справочники
 
 	// Очистка списка рендеринга
 	clear: function() {
-		this.bg = "";		// задний фон
-		this.icon = [];		// иконки
-		this.button = [];	// кнопки
-		this.surface = [];	// поверхности
-		this.texture = [];	// текстуры
+		this.bg 		= "";	// задний фон
+		this.icon 		= [];	// иконки
+		this.button 	= [];	// кнопки
+		this.surface 	= [];	// поверхности
+		this.texture 	= [];	// текстуры
+		this.directory 	= [];	// справочники
+	},
+
+	// Преобразование текста в slug
+	slug: function(text) {
+		let slug = text.replace(' ', '_'); 	// замена пробелов
+		slug = slug.toLowerCase(); 			// переброс в нижний регистр
+		return slug;
 	},
 
 	// Добавление заднего фона
@@ -27,6 +36,7 @@ let rendering = {
 		// Объект кнопки
 		let button 			= {}; 				// объект кнопки
 		button.id 			= id; 				// id кнопки
+		button.slug 		= this.slug(text);	// slug кнопки
 		button.screen		= "";				// принадлежность экрану
 		button.text 		= text; 			// надпись кнопки
 		button.color_text 	= color_text; 		// цвет надписи
@@ -56,6 +66,24 @@ let rendering = {
 		// surface.rendering = false; // состояние отрисовки
 		// Добавление поверхности в массив поверхностей
 		this.surface.push(surface);
+	},
+
+	// Добавление справочника
+	addDirectory: function(id, text, list, x, y, width, height) {
+		// Объект справочника
+		let directory = {};
+		directory.id = id; // id справочника
+		directory.list = list; // список значений в виде объекта
+		directory.text = text; // название справочника
+		directory.x = x; // начало по x
+		directory.y = y; // начало по y
+		directory.width = width; // ширина
+		directory.height = height; // высота
+		directory.hover = false; // состояние наведения
+		directory.click = false; // состояние нажатия
+		directory.access = false; // состояние доступа
+		// Добавление справочника в массив справочников
+		this.directory.push(directory);
 	},
 
 	// Создание кнопки
@@ -100,6 +128,34 @@ let rendering = {
 		surface.id = data.id; // id поверхности
 		canvas.ctx.fillStyle = data.color; // цвет поверхности
 		canvas.ctx.fill(surface); // отрисовка поверхности
+		// Рамка для поверхности
+		canvas.ctx.shadowBlur = 15; // тень
+		canvas.ctx.shadowColor = "#050411"; // цвет тени
+		canvas.ctx.strokeStyle = "#050411"; // цвет рамки
+		canvas.ctx.lineWidth = 3; // ширина линии
+		canvas.ctx.strokeRect(data.x, data.y, data.width, data.height); // рамка
+		canvas.ctx.shadowBlur = 0; // очистка тени
+	},
+
+	// Создание справочника (это будет очень интересно)
+	createDirectory: function(data, canvas) {
+		let directory = new Path2D();
+		directory.rect(data.x, data.y, data.width, data.height);
+		directory.id = data.id;
+		canvas.ctx.fillStyle = "rgba(0,0,0,0.7)";
+		canvas.ctx.fill(directory);
+
+		// Цвет текста
+		canvas.ctx.fillStyle = "white";
+		// Расположение текста горизонтально
+		canvas.ctx.textAlign = "center";
+		// Расположение текста вертикально
+		canvas.ctx.textBaseline = "middle";
+		// Шрифт и размер текста
+		canvas.ctx.font = "16pt Arial";
+		// Отрисовка текста
+		canvas.ctx.fillText(data.text, data.x + data.width / 2, data.y + data.height / 2);
+
 		// Рамка для поверхности
 		canvas.ctx.shadowBlur = 15; // тень
 		canvas.ctx.shadowColor = "#050411"; // цвет тени

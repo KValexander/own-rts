@@ -2,6 +2,12 @@
 // с теми или иными элементами, упрощение логики работы
 // с событиями. Методы обратного вызова.
 let eventList = {
+	// Сокрытие popup окна нажатием на него
+	hidePopup: function(posX, posY) {
+		if(collision.collision(popup, posX, posY)) {
+			popup.rendering = false;
+		};
+	},
 
 	// Нажатие на кнопку
 	clickButton: function(callback, posX, posY) {
@@ -29,8 +35,8 @@ let eventList = {
 					// Трушное наведение
 					rendering.button[i].hover = true;
 					// Возвращение наведённой кнопки
-					callback(rendering.button[i]);
 				}
+					callback(rendering.button[i]);
 			} else {
 				rendering.button[i].hover = false;
 			}

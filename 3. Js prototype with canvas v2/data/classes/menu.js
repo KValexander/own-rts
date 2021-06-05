@@ -12,18 +12,20 @@ class Menu {
 	}
 
 	// Выбор экрана меню
-	changeScreen(screen) {
+	changeScreen(screen, subscreen) {
 		// Очистка списка рендеринга
 		rendering.clear();
 		// Выбор заднего фона
 		rendering.addBackground("data/assets/bg_menu.jpg");
+		// Сокрытие popup окна
+		popup.rendering = false;
 
 		// Выбор нужного экрана
 		switch(screen) {
-			case "main": this.mainScreen(); break;
-			case "choise": this.choiseScreen(); break;
-			case "option": this.optionScreen(); break;
-			case "company": this.companyScreen(); break;
+			case "main": this.mainScreen(subscreen); break;
+			case "choise": this.choiseScreen(subscreen); break;
+			case "option": this.optionScreen(subscreen); break;
+			case "company": this.companyScreen(subscreen); break;
 		}
 	}
 
@@ -31,7 +33,7 @@ class Menu {
 	mainScreen() {
 
 		// Добавление поверхностей
-		rendering.addSurface(1, "rgba(255,255,255,0.5)", grid.lineX * 0.5, grid.lineY * 1, grid.lineX * 4, grid.lineY * 7);
+		rendering.addSurface(1, "rgba(255,255,255,0.5)", grid.lineX * 0.5, grid.lineY, grid.lineX * 4, grid.lineY * 7);
 
 		// Добавление кнопок
 		rendering.addButton(1, "Начать игру", "#fff", "#050411", grid.lineX, grid.lineY * 2, grid.lineX * 3, grid.lineY);
@@ -43,7 +45,7 @@ class Menu {
 	// Экран выбора между компание и сражением
 	choiseScreen() {
 		// Добавление поверхностей
-		rendering.addSurface(1, "rgba(255,255,255,0.5)", grid.lineX * 0.5, grid.lineY * 1, grid.lineX * 4, grid.lineY * 7);
+		rendering.addSurface(1, "rgba(255,255,255,0.5)", grid.lineX * 0.5, grid.lineY, grid.lineX * 4, grid.lineY * 7);
 
 		// Добавление кнопок
 		rendering.addButton(4, "Одиночная компания", "#fff", "#050411", grid.lineX, grid.lineY * 2, grid.lineX * 3, grid.lineY);
@@ -54,7 +56,7 @@ class Menu {
 	// Экран компаний
 	companyScreen() {
 		// Добавление поверхностей
-		rendering.addSurface(1, "rgba(255,255,255,0.5)", grid.lineX * 0.5, grid.lineY * 1, grid.lineX * 15, grid.lineY * 7);
+		rendering.addSurface(1, "rgba(255,255,255,0.5)", grid.lineX * 0.5, grid.lineY, grid.lineX * 15, grid.lineY * 7);
 		rendering.addSurface(2, "rgba(255,255,255,0.5)", grid.lineX * 11.5, grid.lineY * 13.5, grid.lineX * 4, grid.lineY * 2);
 
 		// Добавление кнопок
@@ -65,7 +67,29 @@ class Menu {
 	}
 
 	// Экран настроек
-	optionScreen() {
+	optionScreen(subscreen) {
+		// Добавление поверхностей
+		rendering.addSurface(1, "rgba(255,255,255,0.5)", grid.lineX * 0.5, grid.lineY, grid.lineX * 4, grid.lineY * 7);
+
+		// Добавление кнопок
+		rendering.addButton(7, "Игра", "#fff", "#050411", grid.lineX, grid.lineY * 2, grid.lineX * 3, grid.lineY);
+		rendering.addButton(8, "Графика", "#fff", "#050411", grid.lineX, grid.lineY * 4, grid.lineX * 3, grid.lineY);
+		rendering.addButton(9, "Вернуться", "#fff", "#050411", grid.lineX, grid.lineY * 6, grid.lineX * 3, grid.lineY);
+		
+		// Экран настроек игры
+		if(subscreen == "game") {
+			// Добавление поверхностей
+			rendering.addSurface(2, "rgba(255, 255, 255, 0.5)", grid.lineX * 5, grid.lineY, grid.lineX * 10.5, grid.lineY * 13);
+		}
+		// Экран настроек графики
+		if(subscreen == "graphics") {
+			// Добавление поверхностей
+			rendering.addSurface(2, "rgba(255, 255, 255, 0.5)", grid.lineX * 5, grid.lineY, grid.lineX * 10.5, grid.lineY * 13);
+
+			// Добавление справочников
+			rendering.addDirectory(1, "Разрешение экрана", directory.screen_resolution, grid.lineX * 6, grid.lineY * 2, grid.lineX * 3, grid.lineY);
+			console.log(rendering.directory);
+		}
 
 	}
 }

@@ -13,6 +13,7 @@ window.onload = function() {
 
 	// Функция игрового цикла
 	function gameLoop() {
+		
 		// Вызов метода обновления данных игры
 		game.update();
 
