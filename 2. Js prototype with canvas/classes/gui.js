@@ -57,10 +57,6 @@ class GUI {
 			},
 		};
 
-
-		// Объект всех элементов
-		// Объект элементов с текущим выводом
-
 		// Настройка popup окон
 		this.configPopup("info");
 		this.configPopup("menu");
@@ -211,9 +207,9 @@ class GUI {
 	// Конфигурация info popup окна
 	configPopupInfo(text) {
 		let info 			= this.elements.popup.info;
-		info.rendering 		= true; 									// продолжение отрисовки
-		info.text 			= text; 									// текст
-		info.textLines 		= this.processingText(info);				// массив с линиями текста
+		info.rendering 		= true; 						// продолжение отрисовки
+		info.text 			= text; 						// текст
+		info.textLines 		= this.processingText(info);	// массив с линиями текста
 		// Вычисление высоты в зависимости от текста
 		let coefficient = (info.lineCount == 1) ? 1.5 : 2;
 		info.height = this.getTextHeight(info.text, info.textWidth, info.fontSize) + info.margin * coefficient;
@@ -545,7 +541,7 @@ class GUI {
 		this.screen.ctx.drawImage(this.elements.bg.menu, 0, 0, this.screen.width, this.screen.height);
 
 		// Отрисовка сетки
-		// this.drawGrid();
+		this.drawGrid();
 
 		// Отрисовка поверхностей
 		for(let i = 0; i < this.elements.surface.length; i++)
