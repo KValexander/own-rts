@@ -13,6 +13,8 @@ window.onload = function() {
 
 	// Функция игрового цикла
 	function gameLoop() {
+		// Запись координат мыши в объект
+		extra.recordMouseCoord();
 		
 		// Вызов метода обновления данных игры
 		game.update();

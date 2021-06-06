@@ -33,7 +33,7 @@ class GUI {
 		// Выбор нужного экрана
 		switch(loop) {
 			case "menu": this.menu.changeScreen(screen); break;
-			case "load": break;
+			case "load": this.load.changeScreen(); break;
 			case "play": break;
 		}
 	}
@@ -78,7 +78,7 @@ class GUI {
 
 			// Наведение на справочник
 			eventList.aimDirectory(function(dir) {
-
+				self.actionAimList(dir.id);
 			}, e.offsetX, e.offsetY);
 
 		}
@@ -122,10 +122,15 @@ class GUI {
 
 	}
 
-	// Список действий при нажатии на кнопку 
-	actionClickList(btn_id, btn_slag) {
+	// Список действий при нажатии на элемент 
+	actionClickList(id, slag) {
+		// id кнопок от 1 до 99
+		// id surface от 100 до 199
+		// id справочников от 200 до 299
+
 		// Перебор id
-		switch(btn_id) {
+		switch(id) {
+			// Кнопки
 			// Кнопка "Начать игру"
 			case 1: this.menu.changeScreen("choise"); break;
 			// Кнопка "Настройки"
@@ -142,27 +147,32 @@ class GUI {
 			case 6: case 9: this.menu.changeScreen("main"); break;
 			// Кнопка "Вернуться" на экране компании
 			case 13: this.menu.changeScreen("choise"); break;
+
+			// Справочники
+			case 200: break;
 		};
 
 		// Перебор слагов (когда лень искать id)
-		switch(btn_slag) {
-
+		switch(slag) {
+			// Кнопка "Компания империи" на странице компаний
+			case "компания_империи": this.changeScreen("load"); break;
+			// Кнопка "Начать компанию" на странице загрузки
+			case "начать_компанию": this.changeScreen("menu", "main"); popup.config("Возникла ошибка", this.canvas); break;
 		};
 	}
 
-	// Список действий при наведении на кнопку
-	actionAimList(btn_id, btn_slag) {
+	// Список действий при наведении на элемент
+	actionAimList(id, slag) {
 		// Перебор id
-		switch(btn_id) {
+		switch(id) {
 			// Кнопка "Компания империи" на странице компаний
 			case 10: popup.config(systemText.company.empire, this.canvas); break;
-			// Кнопка "Своя битва"
 			// Кнопки "Компанию сюза рас" и "Компания механикусов"
 			case 11: case 12: popup.config(systemText.availability.company, this.canvas); break;
 		}
 
 		// Перебор слагов (когда лень искать id)
-		switch(btn_slag) {
+		switch(slag) {
 			// Кнопка "Своя битва" на экране выбора режима игры
 			case "своя_битва": popup.config(systemText.availability.button, this.canvas); break;
 		};

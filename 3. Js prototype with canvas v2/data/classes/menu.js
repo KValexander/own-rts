@@ -8,7 +8,9 @@ class Menu {
 
 	// Настройка класса
 	initSetting() {
-
+		// id кнопок от 1 до 99
+		// id поверхностей от 100 до 199
+		// id справочников от 200 до 299
 	}
 
 	// Выбор экрана меню
@@ -33,7 +35,7 @@ class Menu {
 	mainScreen() {
 
 		// Добавление поверхностей
-		rendering.addSurface(1, "rgba(255,255,255,0.5)", grid.lineX * 0.5, grid.lineY, grid.lineX * 4, grid.lineY * 7);
+		rendering.addSurface(100, "rgba(255,255,255,0.5)", grid.lineX * 0.5, grid.lineY, grid.lineX * 4, grid.lineY * 7);
 
 		// Добавление кнопок
 		rendering.addButton(1, "Начать игру", "#fff", "#050411", grid.lineX, grid.lineY * 2, grid.lineX * 3, grid.lineY);
@@ -45,7 +47,7 @@ class Menu {
 	// Экран выбора между компание и сражением
 	choiseScreen() {
 		// Добавление поверхностей
-		rendering.addSurface(1, "rgba(255,255,255,0.5)", grid.lineX * 0.5, grid.lineY, grid.lineX * 4, grid.lineY * 7);
+		rendering.addSurface(100, "rgba(255,255,255,0.5)", grid.lineX * 0.5, grid.lineY, grid.lineX * 4, grid.lineY * 7);
 
 		// Добавление кнопок
 		rendering.addButton(4, "Одиночная компания", "#fff", "#050411", grid.lineX, grid.lineY * 2, grid.lineX * 3, grid.lineY);
@@ -56,8 +58,8 @@ class Menu {
 	// Экран компаний
 	companyScreen() {
 		// Добавление поверхностей
-		rendering.addSurface(1, "rgba(255,255,255,0.5)", grid.lineX * 0.5, grid.lineY, grid.lineX * 15, grid.lineY * 7);
-		rendering.addSurface(2, "rgba(255,255,255,0.5)", grid.lineX * 11.5, grid.lineY * 13.5, grid.lineX * 4, grid.lineY * 2);
+		rendering.addSurface(100, "rgba(255,255,255,0.5)", grid.lineX * 0.5, grid.lineY, grid.lineX * 15, grid.lineY * 7);
+		rendering.addSurface(101, "rgba(255,255,255,0.5)", grid.lineX * 11.5, grid.lineY * 13.5, grid.lineX * 4, grid.lineY * 2);
 
 		// Добавление кнопок
 		rendering.addButton(10, "Компания Империи", "#fff", "#050411", grid.lineX, grid.lineY * 2, grid.lineX * 14, grid.lineY);
@@ -69,7 +71,7 @@ class Menu {
 	// Экран настроек
 	optionScreen(subscreen) {
 		// Добавление поверхностей
-		rendering.addSurface(1, "rgba(255,255,255,0.5)", grid.lineX * 0.5, grid.lineY, grid.lineX * 4, grid.lineY * 7);
+		rendering.addSurface(100, "rgba(255,255,255,0.5)", grid.lineX * 0.5, grid.lineY, grid.lineX * 4, grid.lineY * 7);
 
 		// Добавление кнопок
 		rendering.addButton(7, "Игра", "#fff", "#050411", grid.lineX, grid.lineY * 2, grid.lineX * 3, grid.lineY);
@@ -79,15 +81,15 @@ class Menu {
 		// Экран настроек игры
 		if(subscreen == "game") {
 			// Добавление поверхностей
-			rendering.addSurface(2, "rgba(255, 255, 255, 0.5)", grid.lineX * 5, grid.lineY, grid.lineX * 10.5, grid.lineY * 13);
+			rendering.addSurface(102, "rgba(255, 255, 255, 0.5)", grid.lineX * 5, grid.lineY, grid.lineX * 10.5, grid.lineY * 13);
 		}
 		// Экран настроек графики
 		if(subscreen == "graphics") {
 			// Добавление поверхностей
-			rendering.addSurface(2, "rgba(255, 255, 255, 0.5)", grid.lineX * 5, grid.lineY, grid.lineX * 10.5, grid.lineY * 13);
+			rendering.addSurface(102, "rgba(255, 255, 255, 0.5)", grid.lineX * 5, grid.lineY, grid.lineX * 10.5, grid.lineY * 13);
 
 			// Добавление справочников
-			rendering.addDirectory(1, "Разрешение экрана", directory.screen_resolution, grid.lineX * 6, grid.lineY * 2, grid.lineX * 4, grid.lineY);
+			rendering.addDirectory(200, "Разрешение экрана", directory.screen_resolution, grid.lineX * 6, grid.lineY * 2, grid.lineX * 4, grid.lineY);
 		}
 
 	}

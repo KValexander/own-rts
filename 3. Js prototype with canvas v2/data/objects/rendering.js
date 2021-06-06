@@ -160,15 +160,14 @@ let rendering = {
 		// Отрисовка текста
 		canvas.ctx.fillText(data.text, data.x + data.width / 2 - grid.lineX, data.y + data.height / 2);
 
-		// let y = grid.lineY;
-		// let lineHeight = 15;
-		// // При нажатом справочнике
-		// if(data.click) {
-		// 	for(let key in data.line) {
-		// 		canvas.ctx.fillText(data.line[key], data.x + data.width / 2 - grid.lineX, data.y + y);
-		// 		y += grid.lineY;
-		// 	}
-		// }
+		// При нажатом справочнике
+		if(data.click) {
+			let y = grid.lineY;
+			for(let key in data.list) {
+				canvas.ctx.fillText(key, data.x + data.width / 2 - grid.lineX, data.y + data.height / 2 + y);
+				y += grid.lineY;
+			}
+		}
 
 		// Избражение стрелки
 		let image = new Image();
