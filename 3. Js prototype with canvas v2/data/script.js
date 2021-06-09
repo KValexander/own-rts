@@ -4,7 +4,6 @@ window.onload = function() {
 	// Отключение контекстного меню
 	document.querySelector("canvas").oncontextmenu = function () { return false };
 
-
 	// Создание экземпляра класса игры
 	let game = new Game;
 

@@ -9,14 +9,12 @@ let methods = {
 			return true;
 		else return false;
 	},
-
 	// Функция загрузки изображения
 	loadImage: function(src) {
 		let image = new Image();
 		image.src = src;
 		return image;
 	},
-
 	// Получение рандомного числа
 	randomInteger: function(min, max) {
 		
