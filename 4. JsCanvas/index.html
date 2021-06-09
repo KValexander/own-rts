@@ -15,14 +15,14 @@
 	<script src="script.js"></script>
 
 </head>
-<body onload="screen.init()">
+<body onload="game.init()">
 	<!-- Новый интерфейс -->
 	<!-- В процессе -->
 	<div id="gamecontainer">
 		<!-- Главное меню -->
-		<div id="mainmenu" class="gamelayer">
+		<div id="mainmenu" class="gamelayer layer">
 			<!-- Начальный экран -->
-			<div id="startscreen" class="menulayer">
+			<div id="startscreen" class="menulayer layer">
 				<div class="buttons">
 					<input type="button" value="Начать битву" onclick="screen.changeScreen('mainmenu', 'choicescreen')">
 					<input type="button" value="Настройки" onclick="screen.changeScreen('mainmenu', 'optionscreen')">
@@ -30,45 +30,58 @@
 				</div>
 			</div>
 			<!-- Экран настроек -->
-			<div id="optionscreen" class="menulayer">
+			<div id="optionscreen" class="menulayer layer">
 				<div class="buttons">
-					<input type="button" value="Игра" onclick="screen.changeScreen('mainmenu', 'optiongame')">
-					<input type="button" value="Графика" onclick="screen.changeScreen('mainmenu', 'optiongraphics)">
+					<input type="button" value="Игра" class="disabled">
+					<input type="button" value="Графика" onclick="screen.changeScreen('mainmenu', 'optiongraphic)">
 					<input type="button" value="Вернуться" onclick="screen.changeScreen('mainmenu', 'startscreen')">
 				</div>
-				<div id="optiongame" class="optionlayer"></div>
-				<div id="optiongraphics" class="optionlayer"></div>
+				<div id="optiongame" class="optionlayer layer"></div>
+				<div id="optiongraphic" class="optionlayer layer"></div>
 			</div>
 			<!-- Выбор режима сражения -->
-			<div id="choicescreen" class="menulayer">
+			<div id="choicescreen" class="menulayer layer">
 				<div class="buttons">
-					<input type="button" value="Одиночная Кампания" onclick="screen.changeScreen('mainmenu', 'campaignscreen')">
-					<input type="button" value="Своя битва">
+					<input type="button" value="Одиночные Кампании" onclick="screen.changeScreen('mainmenu', 'campaignscreen')">
+					<input type="button" value="Своя битва" class="disabled">
 					<input type="button" value="Вернуться" onclick="screen.changeScreen('mainmenu', 'startscreen')">
 				</div>
 			</div>
 			<!-- Выбор компании -->
-			<div id="campaignscreen" class="menulayer">
+			<div id="campaignscreen" class="menulayer layer">
 				<!-- Кнопки выбора компании -->
 				<div class="buttons">
-					<input type="button" value="Безудержная империя">
-					<input type="button" value="Восстание союза">
-					<input type="button" value="Орден машин">
+					<input type="button" value="Генеральная военная академия" id="generalyAcademy" onclick="game.startLoad('training')">
+					<input type="button" value="Безудержность империи" id="rampantEmpire" onclick="game.startLoad('empire')">
+					<input type="button" value="Восстание союза" id="unionUprising" class="disabled">
+					<input type="button" value="Орден машин" id="orderMachine" class="disabled">
 				</div>
-
 				<!-- Вернуться -->
 				<div class="buttons">
 					<input type="button" value="Вернуться" onclick="screen.changeScreen('mainmenu', 'choicescreen')">
 				</div>
 			</div>
 		</div>
+		<!-- Экран загрузки -->
+		<div id="loadscreen" class="gamelayer layer">
+			<div id="campaigndescription">
+				<h1></h1>
+				<div></div>
+			</div>
+			<div class="buttons">
+				<input type="button" value="Начать компанию" onclick="game.startGame()">
+			</div>
+		</div>
 		<!-- Игровой экран -->
-		<div id="interfacescreen" class="gamelayer">
+		<div id="gamescreen" class="gamelayer layer">
 			<div id="interfacetop"></div>
 			<canvas></canvas>
 			<div id="interfacebottom"></div>
 		</div>
+		<!-- pop-up окно -->
+		<div id="popup"></div>
 	</div>
+
 
 	<!-- Старый интерфейс -->
 	<!-- <canvas></canvas> -->
