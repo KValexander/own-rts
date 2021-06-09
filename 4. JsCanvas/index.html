@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<link rel="stylesheet" href="style.css">
+
+	<!-- Подключение библиотеки jquery -->
+	<script src="jquery-3.6.0.min.js"></script>
+
+	<!-- Подключение экранов -->
+	<script src="screen.js"></script>
+	<!-- Подключение скрипта -->
+	<script src="script.js"></script>
+
+</head>
+<body onload="screen.init()">
+	<!-- Новый интерфейс -->
+	<!-- В процессе -->
+	<div id="gamecontainer">
+		<!-- Главное меню -->
+		<div id="mainmenu" class="gamelayer">
+			<!-- Начальный экран -->
+			<div id="startscreen" class="menulayer">
+				<div class="buttons">
+					<input type="button" value="Начать битву" onclick="screen.changeScreen('mainmenu', 'choicescreen')">
+					<input type="button" value="Настройки" onclick="screen.changeScreen('mainmenu', 'optionscreen')">
+					<input type="button" value="Выход" onclick="window.close()">
+				</div>
+			</div>
+			<!-- Экран настроек -->
+			<div id="optionscreen" class="menulayer">
+				<div class="buttons">
+					<input type="button" value="Игра" onclick="screen.changeScreen('mainmenu', 'optiongame')">
+					<input type="button" value="Графика" onclick="screen.changeScreen('mainmenu', 'optiongraphics)">
+					<input type="button" value="Вернуться" onclick="screen.changeScreen('mainmenu', 'startscreen')">
+				</div>
+				<div id="optiongame" class="optionlayer"></div>
+				<div id="optiongraphics" class="optionlayer"></div>
+			</div>
+			<!-- Выбор режима сражения -->
+			<div id="choicescreen" class="menulayer">
+				<div class="buttons">
+					<input type="button" value="Одиночная Кампания" onclick="screen.changeScreen('mainmenu', 'campaignscreen')">
+					<input type="button" value="Своя битва">
+					<input type="button" value="Вернуться" onclick="screen.changeScreen('mainmenu', 'startscreen')">
+				</div>
+			</div>
+			<!-- Выбор компании -->
+			<div id="campaignscreen" class="menulayer">
+				<!-- Кнопки выбора компании -->
+				<div class="buttons">
+					<input type="button" value="Безудержная империя">
+					<input type="button" value="Восстание союза">
+					<input type="button" value="Орден машин">
+				</div>
+
+				<!-- Вернуться -->
+				<div class="buttons">
+					<input type="button" value="Вернуться" onclick="screen.changeScreen('mainmenu', 'choicescreen')">
+				</div>
+			</div>
+		</div>
+		<!-- Игровой экран -->
+		<div id="interfacescreen" class="gamelayer">
+			<div id="interfacetop"></div>
+			<canvas></canvas>
+			<div id="interfacebottom"></div>
+		</div>
+	</div>
+
+	<!-- Старый интерфейс -->
+	<!-- <canvas></canvas> -->
+	<!-- <script src="script.js"></script> -->
+</body>
+</html>

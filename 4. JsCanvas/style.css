@@ -1,0 +1,70 @@
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+body {
+	background-color: black;
+	font-family: Arial;
+	overflow: hidden;
+}
+/*Старый интерфейс*/
+/*canvas {
+	border: solid 3px gray;
+	position: relative;
+	display: block;
+	margin: auto;
+	background-color: #fff;
+}*/
+
+/*Новый интерфейс*/
+/*В процессе*/
+
+div#gamecontainer {
+	position: relative;
+	overflow: hidden;
+	margin: 0 auto;
+	transition: .2s;
+	background-size: 100% 100%;
+	background-image: url("gui/bg_menu.jpg");
+}
+
+div#gamecontainer input {
+	height: 50px;
+	width: 100%;
+	color: white;
+	font-size: 14pt;
+	transition: .2s;
+	background-color: black;
+	border: none;
+}
+
+div#gamecontainer input:hover {
+	background-color: white;
+	color: black;
+}
+
+div#gamecontainer div.buttons {
+	position: relative;
+	padding: 10px 20px;
+	width: 306px;
+	top: 50px;
+	left: 50px;
+	border: solid 3px black;
+	background-color: rgba(255,255,255,0.5);
+	box-shadow: 0 0 5px rgba(0,0,0,0.5);
+}
+
+div#gamecontainer div.buttons input {
+	margin: 10px 0;
+}
+
+div#gamecontainer div#campaignscreen div.buttons:first-child {
+	width: calc(100% - 100px);
+}
+
+div#gamecontainer div#campaignscreen div.buttons:last-child {
+	top: calc(100% - 100px);
+	left: calc(100% - 50px - 306px);
+}
