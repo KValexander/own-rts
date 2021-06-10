@@ -40,6 +40,7 @@ div#gamecontainer div#loadscreen {
 
 div#gamecontainer input {
 	height: 50px;
+	outline: none;
 	width: 100%;
 	color: white;
 	font-size: 14pt;
@@ -93,7 +94,7 @@ div#gamecontainer div#optiongraphics {
 }
 
 div#gamecontainer div#campaigndescription {
-	width: 606px;
+	width: 32%;
 	position: absolute;
 	text-align: center;
 	top: calc(50% - 280px);
@@ -107,7 +108,7 @@ div#gamecontainer div#campaigndescription {
 }
 
 div#gamecontainer div#campaigndescription div {
-	width: 560px;
+	width: 100%;
 	margin-top: 30px;
 	text-align: justify;
 }

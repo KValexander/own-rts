@@ -9,6 +9,11 @@
 	<!-- Подключение библиотеки jquery -->
 	<script src="jquery-3.6.0.min.js"></script>
 
+	<!-- Подключение стартовых данных кампаний -->
+	<script src="campaigns.js"></script>
+	<!-- Подключение шаблонов данных -->
+	<script src="templates.js"></script>
+
 	<!-- Подключение экранов -->
 	<script src="screen.js"></script>
 	<!-- Подключение скрипта -->
@@ -64,18 +69,18 @@
 		</div>
 		<!-- Экран загрузки -->
 		<div id="loadscreen" class="gamelayer layer">
-			<div id="campaigndescription">
-				<h1></h1>
-				<div></div>
-			</div>
+			<div id="campaigndescription"><h1></h1><div></div></div>
 			<div class="buttons">
-				<input type="button" value="Начать компанию" onclick="game.startGame()">
+				<input type="button">
 			</div>
 		</div>
 		<!-- Игровой экран -->
 		<div id="gamescreen" class="gamelayer layer">
+			<!-- Верхняя часть интерфейса -->
 			<div id="interfacetop"></div>
+			<!-- Игровой экран -->
 			<canvas></canvas>
+			<!-- Нижняя часть интерфейса -->
 			<div id="interfacebottom"></div>
 		</div>
 		<!-- pop-up окно -->
@@ -85,6 +90,6 @@
 
 	<!-- Старый интерфейс -->
 	<!-- <canvas></canvas> -->
-	<!-- <script src="script.js"></script> -->
+	<!-- <script src="script_old.js"></script> -->
 </body>
 </html>
