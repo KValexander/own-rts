@@ -13,11 +13,13 @@ let game = {
 		// Canvas and Context
 		game.canvas = document.querySelector("canvas");
 		game.context = game.canvas.getContext("2d");
+	},
 
+	// Update canvas resolution 
+	canvasSize: function() {
 		// Canvas size
-		game.canvas.width = screen.canvasWidth;
-		game.canvas.height = screen.canvasHeight;
-
+		game.canvas.width = $("canvas").width();
+		game.canvas.height = $("canvas").height();
 	},
 
 	// Check localStorage
@@ -58,7 +60,6 @@ let game = {
 		game.mouse();
 
 		game.background = game.loadImage("gui/bg_game.jpg");
-
 		game.background.onload = () => callback(true);
 	},
 
@@ -69,18 +70,11 @@ let game = {
 
 		// Game data Arrays
 		game.items = [];
-		// game.factions = [];
-		// game.units = [];
-		// game.heroes = [];
-		// game.buildings = [];
-		// game.factions = [];
-		// game.factions[n].units;
-		// game.factions[n].heroes;
-		// game.factions[n].buildings;
-		// game.tasks = [];
-		// game.terrain = [];
-		// game.selectedItems = [];
-		// game.triggeredEvents = [];
+		game.sortedItems = [];
+		game.selectedItems = [];
+		
+		// Game data Objects
+		game.personallySelected = {};
 	},
 
 	// Camera method
@@ -94,37 +88,81 @@ let game = {
 		$("canvas").mousedown((e) => {
 			game.mouse = e;
 			game.mouse.click = true;
-			game.mouseEvents();
+			game.mouseClick();
 			game.mouse.click = false;
+			game.mouseHolding();
 		});
 		$("canvas").mouseup(() => game.mouse = {});
 	},
 
-	// Mouse events
-	mouseEvents: function() {
+	// Mouse click events
+	mouseClick: function() {
 		if(!game.mouse.click) return;
 
+		// Mouse click handling
 		switch(game.mouse.which) {
+			// Left mouse button
 			case 1:
 				console.log("left click");
-				game.addItem("unit", "soldier", game.mouse.offsetX, game.mouse.offsetY, "empire");
+				game.selectItem();
 			break;
-
+			// Middle mouse button
 			case 2:
 				console.log("middle click");
-				game.addItem("unit", "soldier", game.mouse.offsetX, game.mouse.offsetY, "neutral");
+				game.addItem("unit", "worker", game.mouse.offsetX, game.mouse.offsetY, "neutral");
 			break;
-			
+			// Right mouse button
 			case 3:
 				console.log("right click");
 				game.addItem("unit", "soldier", game.mouse.offsetX, game.mouse.offsetY, "decay");
 			break;
 		};
+		console.log(game.items);
+	},
+
+	// Select Item
+	selectItem: function() {
+		for(let i = 0; i < game.items.length; i++) {
+			if(game.items[i].selectable) {
+				if(game.mouseCollision(game.items[i], game.mouse.offsetX, game.mouse.offsetY)) {
+					game.clearSelection();
+					game.items[i].selected = true;
+					game.selectedItems.push(game.items[i]);
+					game.personallySelected = game.items[i];
+				}
+			}
+		}
+	},
+
+	// Clear selection
+	clearSelection: function() {
+		game.personallySelected = {};
+		while(game.selectedItems.length > 0) {
+			game.selectedItems.pop().selected = false;
+		}
+	},
+
+	// Mouse collision
+	mouseCollision: function(item, x, y) {
+		if(	item.x < x && (item.x + item.width) > x
+			&& item.y < y && (item.y + item.height) > y)
+			return true;
+		else return false;
+	},
+
+	// Holding mouse event
+	mouseHolding() {
+		// Draggable
+
+
+		// Select many items
 	},
 
 	// Start game
 	startGame: function() {
 		screen.changeScreen('gamescreen');
+		game.canvasSize();
+
 		game.running = true;
 		game.loop();
 	},
@@ -145,6 +183,9 @@ let game = {
 		// Rendering item
 		game.items.forEach((item) => game.drawItem(item));
 
+		// Rendering selection for selected items
+		game.selectedItems.forEach((item) => game.drawSelection(item));
+
 	},
 
 	// Load image
@@ -161,9 +202,18 @@ let game = {
 
 		// Get template
 		switch(type) {
-			case "unit": temp = units.list.find(unit => unit.name = name); break;
-			case "building":  temp = buildings.list.find(unit => unit.name = name);break;
-			case "hero":  temp = heroes.list.find(unit => unit.name = name);break;
+			case "unit":
+				temp = units.list[name];
+				Object.assign(temp, units.defaults);
+			break;
+			case "building": 
+				temp = buildings.list[name];
+				Object.assign(temp, buildings.defaults);
+			break;
+			case "hero":
+				temp = heroes.list[name];
+				Object.assign(temp, heroes.defaults);
+			break;
 		};
 
 		// Writing template data to a new object
@@ -181,15 +231,21 @@ let game = {
 
 	// Draw Item
 	drawItem: function(item) {
+		game.context.drawImage(game.loadImage(item.src), item.x, item.y, item.width, item.height);
+	},
 
+	// Draw selection for selected items
+	drawSelection: function(item) {
+		game.context.strokeStyle = "green";
+		game.context.strokeRect(item.x, item.y, item.width, item.height);
 	},
 
 	// Draw grid method
 	drawGrid: function() {
 		// Grid variable
 		let color = "#fff";
-		let lineX = 32;
-		let lineY = 32;
+		let lineX = 16;
+		let lineY = 16;
 		let collsX = game.canvas.width / lineX;
 		let collsY = game.canvas.height / lineX;
 

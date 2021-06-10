@@ -1,9 +1,11 @@
 let units = {
-	list: [
-		{
+	list: {
+		"worker": {
 			name: "worker",
 			src: "images/worker.png",
 			hitPoints: 80,
+			width: 16,
+			height: 24,
 			damage: [5, 7],
 			radiuse: 10,
 			speed: 3,
@@ -15,10 +17,12 @@ let units = {
 			cost: {"gold": 50},
 			frames: [],
 		},
-		{
+		"soldier": {
 			name: "soldier",
 			src: "images/soldier.png",
 			hitPoints: 160,
+			width: 20,
+			height: 24,
 			damage: [11, 15],
 			radiuse: 15,
 			speed: 4,
@@ -30,7 +34,16 @@ let units = {
 			cost: {"gold": 80, "metal": 10},
 			frames: [],
 		}
-	],
+	},
+	defaults: {
+		type: "unit",
+		animationIndex: 0,
+		direction: 0,
+		action: "stand",
+		selected: false,
+		selectable: true,
+		directions: 8,
+	},
 };
 
 let buildings = {}
