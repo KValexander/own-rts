@@ -40,6 +40,7 @@ let units = {
 		animationIndex: 0,
 		direction: 0,
 		action: "stand",
+		move: false,
 		selected: false,
 		selectable: true,
 		directions: 8,

@@ -58,6 +58,7 @@ let game = {
 	loading: function(data, callback) {
 		game.resetArrays();
 		game.mouse();
+		game.keys();
 
 		game.background = game.loadImage("gui/bg_game.jpg");
 		game.background.onload = () => callback(true);
@@ -75,6 +76,7 @@ let game = {
 		
 		// Game data Objects
 		game.personallySelected = {};
+		game.highlightLine = {};
 	},
 
 	// Camera method
@@ -82,17 +84,39 @@ let game = {
 		game.camera = {};
 	},
 
+	// Keys method
+	keys: function() {
+		game.keyDown = {};
+		// Writes a key code in keyDown
+		$("body").keydown((e) => {
+			game.keyDown = e.code;
+			console.log(game.keyDown);
+		});
+		// Clear a key code in keyDown
+		$("body").keyup((e) => game.keyDown = {});
+	},
+
 	// Mouse method
 	mouse: function() {
+		// Mouse data
 		game.mouse = {};
+		// Mouse coordinats
+		game.mouseCoord = {};
+
+		// Click handling
 		$("canvas").mousedown((e) => {
 			game.mouse = e;
 			game.mouse.click = true;
 			game.mouseClick();
 			game.mouse.click = false;
-			game.mouseHolding();
 		});
 		$("canvas").mouseup(() => game.mouse = {});
+
+		// Mouse move handling
+		$("canvas").mousemove((e) => {
+			game.mouseCoord.x = e.offsetX;
+			game.mouseCoord.y = e.offsetY;
+		});
 	},
 
 	// Mouse click events
@@ -114,8 +138,12 @@ let game = {
 			// Right mouse button
 			case 3:
 				console.log("right click");
-				game.addItem("unit", "soldier", game.mouse.offsetX, game.mouse.offsetY, "decay");
+				// game.selectedMove(game.mouse.offsetX, game.mouse.offsetY);
+				game.selectedItems.forEach((item) => item.move = true);
+				game.selectedMoveCoord = {x: game.mouse.offsetX, y: game.mouse.offsetY};
+				// game.addItem("unit", "soldier", game.mouse.offsetX, game.mouse.offsetY, "decay");
 			break;
+			default: break;
 		};
 		console.log(game.items);
 	},
@@ -150,14 +178,6 @@ let game = {
 		else return false;
 	},
 
-	// Holding mouse event
-	mouseHolding() {
-		// Draggable
-
-
-		// Select many items
-	},
-
 	// Start game
 	startGame: function() {
 		screen.changeScreen('gamescreen');
@@ -167,9 +187,78 @@ let game = {
 		game.loop();
 	},
 
+	// Holding mouse event
+	mouseHolding: function() {
+		// Draggable, if the left mouse button is pressed and left shift
+		if(game.mouse.which == 1 && game.keyDown == "ShiftLeft") {
+			game.personallySelected.x = game.mouseCoord.x - game.personallySelected.width / 2;
+			game.personallySelected.y = game.mouseCoord.y - game.personallySelected.height / 2;
+		// State rendering hightlight line
+		} else if(game.mouse.which == 1) {
+			game.stateSelectLine = true;
+		} else {
+			game.stateSelectLine = false;
+		}
+	},
+
+	// Collision for checking multiple selection
+	selectCollision: function(hgl, item) {
+		if( item.x > hgl.x && (item.x + item.width) < (hgl.x + hgl.width)
+			&& item.y < hgl.y && (item.y + item.height) > (hgl.y + hgl.height))
+			return true;
+		else return false;
+	},
+	
+	// Draw highlight line for select many items
+	drawHighlightLine: function() {
+		game.highlightLine = {
+			x: game.mouse.offsetX,
+			y: game.mouse.offsetY,
+			width: game.mouseCoord.x - game.mouse.offsetX,
+			height: game.mouseCoord.y - game.mouse.offsetY
+		};
+		game.context.strokeStyle = "green";
+		game.context.lineWidth = 3;
+		game.context.strokeRect(game.highlightLine.x, game.highlightLine.y, game.highlightLine.width, game.highlightLine.height);
+		
+	},
+
+	// Select many items in highlight line
+	selectHightlightLine: function() {
+		game.selectedItems = [];
+		game.personallySelected = [];
+		for(let i = 0; i < game.items.length; i++) {
+			if(game.selectCollision(game.highlightLine, game.items[i])) {
+				game.selectedItems.push(game.items[i]);
+			}
+		}
+	},
+
+	// Movement selected items
+	selectedMove: function(item, x, y) {
+		if(item.x == x && item.y == y) item.move = false;
+
+		if(item.x < x) item.x += item.speed;
+		if(item.x > x) item.x -= item.speed;
+		if(item.y < y) item.y += item.speed;
+		if(item.y > y) item.y -= item.speed;
+	},
+
 	// Update game data
 	update: function() {
 
+		// Hold the mouse
+		game.mouseHolding();
+
+		// Movement selected items
+		for(let i = 0; i < game.selectedItems.length; i++) {
+			let item = game.selectedItems[i];
+			if(item.move) game.selectedMove(item, game.selectedMoveCoord.x, game.selectedMoveCoord.y);
+		}
+
+		// Select many items in highlight line
+		if(game.stateSelectLine) game.selectHightlightLine();
+	
 	},
 
 	// Rendering game assets
@@ -186,6 +275,8 @@ let game = {
 		// Rendering selection for selected items
 		game.selectedItems.forEach((item) => game.drawSelection(item));
 
+		// Rendering highlight line for select many items
+		if(game.stateSelectLine) game.drawHighlightLine();
 	},
 
 	// Load image
@@ -221,8 +312,8 @@ let game = {
 		for (let key in temp) item[key] = temp[key];
 
 		// Adding properties
-		item.x = x;
-		item.y = y;
+		item.x = x - item.width / 2;
+		item.y = y - item.height / 2;
 		item.faction = faction;
 
 		// Adding to an array
@@ -237,6 +328,7 @@ let game = {
 	// Draw selection for selected items
 	drawSelection: function(item) {
 		game.context.strokeStyle = "green";
+		game.context.lineWidth = 2;
 		game.context.strokeRect(item.x, item.y, item.width, item.height);
 	},
 
@@ -251,6 +343,7 @@ let game = {
 
 		// Arranging grid lines
 		game.context.beginPath();
+		game.context.lineWidth = 1;
 		for(let i = 0; i < collsX * lineX; i += lineX) {
 			game.context.moveTo(i, 0);
 			game.context.lineTo(i, game.canvas.height);
