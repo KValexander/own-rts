@@ -100,22 +100,26 @@ let game = {
 	mouse: function() {
 		// Mouse data
 		game.mouse = {};
+		// Mouse events
+		game.mouse.e = {};
 		// Mouse coordinats
-		game.mouseCoord = {};
+		game.mouse.coord = {};
+		// Mouse move items coord
+		game.mouse.moveCoord = {};
 
 		// Click handling
 		$("canvas").mousedown((e) => {
-			game.mouse = e;
+			game.mouse.e = e;
 			game.mouse.click = true;
 			game.mouseClick();
 			game.mouse.click = false;
 		});
-		$("canvas").mouseup(() => game.mouse = {});
+		$("canvas").mouseup(() => game.mouse.e = {});
 
 		// Mouse move handling
 		$("canvas").mousemove((e) => {
-			game.mouseCoord.x = e.offsetX;
-			game.mouseCoord.y = e.offsetY;
+			game.mouse.coord.x = e.offsetX;
+			game.mouse.coord.y = e.offsetY;
 		});
 	},
 
@@ -124,7 +128,7 @@ let game = {
 		if(!game.mouse.click) return;
 
 		// Mouse click handling
-		switch(game.mouse.which) {
+		switch(game.mouse.e.which) {
 			// Left mouse button
 			case 1:
 				console.log("left click");
@@ -133,14 +137,14 @@ let game = {
 			// Middle mouse button
 			case 2:
 				console.log("middle click");
-				game.addItem("unit", "worker", game.mouse.offsetX, game.mouse.offsetY, "neutral");
+				game.addItem("unit", "worker", game.mouse.e.offsetX, game.mouse.e.offsetY, "neutral");
 			break;
 			// Right mouse button
 			case 3:
 				console.log("right click");
 				// game.selectedMove(game.mouse.offsetX, game.mouse.offsetY);
 				game.selectedItems.forEach((item) => item.move = true);
-				game.selectedMoveCoord = {x: game.mouse.offsetX, y: game.mouse.offsetY};
+				game.mouse.moveCoord = {x: game.mouse.e.offsetX - 8, y: game.mouse.e.offsetY - 8};
 				// game.addItem("unit", "soldier", game.mouse.offsetX, game.mouse.offsetY, "decay");
 			break;
 			default: break;
@@ -152,7 +156,7 @@ let game = {
 	selectItem: function() {
 		for(let i = 0; i < game.items.length; i++) {
 			if(game.items[i].selectable) {
-				if(game.mouseCollision(game.items[i], game.mouse.offsetX, game.mouse.offsetY)) {
+				if(game.mouseCollision(game.items[i], game.mouse.e.offsetX, game.mouse.e.offsetY)) {
 					game.clearSelection();
 					game.items[i].selected = true;
 					game.selectedItems.push(game.items[i]);
@@ -190,14 +194,18 @@ let game = {
 	// Holding mouse event
 	mouseHolding: function() {
 		// Draggable, if the left mouse button is pressed and left shift
-		if(game.mouse.which == 1 && game.keyDown == "ShiftLeft") {
-			game.personallySelected.x = game.mouseCoord.x - game.personallySelected.width / 2;
-			game.personallySelected.y = game.mouseCoord.y - game.personallySelected.height / 2;
+		if(game.mouse.e.which == 1 && game.keyDown == "ShiftLeft") {
+			game.personallySelected.x = game.mouse.coord.x - game.personallySelected.width / 2;
+			game.personallySelected.y = game.mouse.coord.y - game.personallySelected.height / 2;
+		}
+		else if(game.mouse.e.which == 2 && game.keyDown == "ShiftLeft") {
+			game.addItem("unit", "soldier", game.mouse.coord.x, game.mouse.coord.y, "red");
+		}
 		// State rendering hightlight line
-		} else if(game.mouse.which == 1) {
-			game.stateSelectLine = true;
+		else if(game.mouse.e.which == 1) {
+			game.mouse.stateSelectLine = true;
 		} else {
-			game.stateSelectLine = false;
+			game.mouse.stateSelectLine = false;
 		}
 	},
 
@@ -212,10 +220,10 @@ let game = {
 	// Draw highlight line for select many items
 	drawHighlightLine: function() {
 		game.highlightLine = {
-			x: game.mouse.offsetX,
-			y: game.mouse.offsetY,
-			width: game.mouseCoord.x - game.mouse.offsetX,
-			height: game.mouseCoord.y - game.mouse.offsetY
+			x: game.mouse.e.offsetX,
+			y: game.mouse.e.offsetY,
+			width: game.mouse.coord.x - game.mouse.e.offsetX,
+			height: game.mouse.coord.y - game.mouse.e.offsetY
 		};
 		game.context.strokeStyle = "green";
 		game.context.lineWidth = 3;
@@ -226,6 +234,7 @@ let game = {
 	// Select many items in highlight line
 	selectHightlightLine: function() {
 		game.selectedItems = [];
+		game.mouse.moveCoord = {};
 		game.personallySelected = [];
 		for(let i = 0; i < game.items.length; i++) {
 			if(game.selectCollision(game.highlightLine, game.items[i])) {
@@ -250,15 +259,47 @@ let game = {
 		// Hold the mouse
 		game.mouseHolding();
 
-		// Movement selected items
+		// Handling data items
+		for(let i = 0; i < game.items.length; i++) {
+			// Handling collision items
+			for(let j = 0; j < game.items.length; j++) {
+				let item1 = game.items[i];
+				if(game.itemsCollision(game.items[i], game.items[j])) {
+					let item2 = game.items[j];
+					let acenter = {x: item1.x + item1.width / 2, y: item1.y + item1.height / 2};
+					let bcenter = {x: item2.x + item2.width / 2, y: item2.y + item2.height / 2};
+					let d = {x: acenter.x - bcenter.x, y: acenter.y - bcenter.y};
+					if(d.x > 0) item1.x += item1.speed;
+					if(d.x < 0) item1.x -= item1.speed;
+					if(d.y > 0) item1.y += item1.speed;
+					if(d.y < 0) item1.y -= item1.speed;
+				}
+			}
+		}
+
+		// Handling data selected items
 		for(let i = 0; i < game.selectedItems.length; i++) {
 			let item = game.selectedItems[i];
-			if(item.move) game.selectedMove(item, game.selectedMoveCoord.x, game.selectedMoveCoord.y);
+			// Movement selected items
+			if(item) game.selectedMove(item, game.mouse.moveCoord.x, game.mouse.moveCoord.y);
 		}
 
 		// Select many items in highlight line
-		if(game.stateSelectLine) game.selectHightlightLine();
+		if(game.mouse.stateSelectLine) game.selectHightlightLine();
 	
+	},
+
+	// Check items collision
+	itemsCollision: function(item1, item2) {
+		if(	item1.x <= (item2.x + item2.width)
+			&& item2.x <= (item1.x + item1.width)
+			&& item1.y <= (item2.y + item2.height)
+			&& item2.y <= (item1.y + item1.height))
+		{
+			return true;
+		} else {
+			return false;
+		}
 	},
 
 	// Rendering game assets
@@ -276,7 +317,7 @@ let game = {
 		game.selectedItems.forEach((item) => game.drawSelection(item));
 
 		// Rendering highlight line for select many items
-		if(game.stateSelectLine) game.drawHighlightLine();
+		if(game.mouse.stateSelectLine) game.drawHighlightLine();
 	},
 
 	// Load image

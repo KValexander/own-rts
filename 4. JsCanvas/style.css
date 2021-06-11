@@ -124,6 +124,15 @@ div#gamecontainer div#interfacetop {
 	background-color: white;
 }
 
+div#gamecontainer div#interfacetop input{
+	display: inline-block;
+	margin: 0;
+	padding: 0;
+	height: 100%;
+	font-size: 12pt;
+	width: 10%;
+}
+
 div#gamecontainer canvas {
 	display: block;
 	width: 100%;
@@ -133,6 +142,13 @@ div#gamecontainer canvas {
 div#gamecontainer div#interfacebottom {
 	height: 17%;
 	background-color: white;
+}
+
+div#gamecontainer div#interfacebottom div#minimap{
+	width: 13%;
+	height: 100%;
+	background-color: black;
+	border: solid 3px white;
 }
 
 div#gamecontainer div#popup {
