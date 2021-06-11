@@ -211,8 +211,25 @@ let game = {
 
 	// Collision for checking multiple selection
 	selectCollision: function(hgl, item) {
-		if( item.x > hgl.x && (item.x + item.width) < (hgl.x + hgl.width)
-			&& item.y < hgl.y && (item.y + item.height) > (hgl.y + hgl.height))
+		// if( item.x > hgl.x && (item.x + item.width) < (hgl.x + hgl.width)
+		// 	&& item.y < hgl.y && (item.y + item.height) > (hgl.y + hgl.height))
+		// 	return true;
+		// else return false;
+
+		// The wonders of mathematics
+		if(	// TopLeft
+			hgl.x < item.x && (hgl.x + hgl.width) > (item.x + item.width)
+			&& hgl.y < item.y && (hgl.y + hgl.height) > (item.y + item.height) ||
+			// BottomLeft
+			hgl.x < item.x && (hgl.x + hgl.width) > (item.x + item.width)
+			&& hgl.y > item.y && (hgl.y + hgl.height) < (item.y + item.height) ||
+			// TopRight
+			hgl.x > item.x && (hgl.x + hgl.width) < (item.x + item.width)
+			&& hgl.y < item.y && (hgl.y + hgl.height) > (item.y + item.height) ||
+			// BottomRight
+			hgl.x > item.x && (hgl.x + hgl.width) < (item.x + item.width)
+			&& hgl.y > item.y && (hgl.y + hgl.height) < (item.y + item.height)
+		)
 			return true;
 		else return false;
 	},
