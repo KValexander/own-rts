@@ -56,7 +56,7 @@ let game = {
 
 	// Load game data, assets, triggers, ect
 	loading: function(data, callback) {
-		game.resetArrays();
+		game.resetData();
 		game.mouse();
 		game.keys();
 
@@ -65,7 +65,7 @@ let game = {
 	},
 
 	// Reset game data array
-	resetArrays: function() {
+	resetData: function() {
 		// For UID
 		game.counter = 1;
 
@@ -131,43 +131,49 @@ let game = {
 		switch(game.mouse.e.which) {
 			// Left mouse button
 			case 1:
-				console.log("left click");
-				game.selectItem();
 			break;
 			// Middle mouse button
 			case 2:
-				console.log("middle click");
 				game.addItem("unit", "worker", game.mouse.e.offsetX, game.mouse.e.offsetY, "neutral");
 			break;
 			// Right mouse button
 			case 3:
-				console.log("right click");
-				// game.selectedMove(game.mouse.offsetX, game.mouse.offsetY);
 				game.selectedItems.forEach((item) => item.move = true);
 				game.mouse.moveCoord = {x: game.mouse.e.offsetX - 8, y: game.mouse.e.offsetY - 8};
-				// game.addItem("unit", "soldier", game.mouse.offsetX, game.mouse.offsetY, "decay");
 			break;
 			default: break;
 		};
 		console.log(game.items);
 	},
 
-	// Select Item
-	selectItem: function() {
-		for(let i = 0; i < game.items.length; i++) {
-			if(game.items[i].selectable) {
-				if(game.mouseCollision(game.items[i], game.mouse.e.offsetX, game.mouse.e.offsetY)) {
-					game.clearSelection();
-					game.items[i].selected = true;
-					game.selectedItems.push(game.items[i]);
-					game.personallySelected = game.items[i];
-				}
+	// Select personally item from selected items in #selectitems
+	selectPersonallyItem: function(id) {
+		for(let i = 0; i < game.selectedItems.length; i++) {
+			if(game.selectedItems[i].id == id) {
+				game.personallySelect(game.selectedItems[i]);
+				break;
 			}
 		}
+		screen.setSelectedItems(game.personallySelected.id, game.selectedItems);
+	},
+
+	// Select item from selected items in #selectitems
+	selectItem: function(id) {
+		for(let i = 0; i < game.selectedItems.length; i++) {
+			if(game.selectedItems[i].id == id) {
+				let item = game.selectedItems[i];
+				game.clearSelection();
+				game.selectedItems.push(item);
+				game.personallySelect(item);
+			}
+		}
+		screen.setSelectedItems(game.personallySelected.id, game.selectedItems);
 	},
 
 	// Clear selection
 	clearSelection: function() {
+		screen.clearInformation();
+		screen.clearSelectedItems();
 		game.personallySelected = {};
 		while(game.selectedItems.length > 0) {
 			game.selectedItems.pop().selected = false;
@@ -199,7 +205,7 @@ let game = {
 			game.personallySelected.y = game.mouse.coord.y - game.personallySelected.height / 2;
 		}
 		else if(game.mouse.e.which == 2 && game.keyDown == "ShiftLeft") {
-			game.addItem("unit", "soldier", game.mouse.coord.x, game.mouse.coord.y, "red");
+			game.addItem("unit", "soldier", game.mouse.coord.x, game.mouse.coord.y, "red", "red");
 		}
 		// State rendering hightlight line
 		else if(game.mouse.e.which == 1) {
@@ -211,11 +217,6 @@ let game = {
 
 	// Collision for checking multiple selection
 	selectCollision: function(hgl, item) {
-		// if( item.x > hgl.x && (item.x + item.width) < (hgl.x + hgl.width)
-		// 	&& item.y < hgl.y && (item.y + item.height) > (hgl.y + hgl.height))
-		// 	return true;
-		// else return false;
-
 		// The wonders of mathematics
 		if(	// TopLeft
 			hgl.x < item.x && (hgl.x + hgl.width) > (item.x + item.width)
@@ -245,19 +246,28 @@ let game = {
 		game.context.strokeStyle = "green";
 		game.context.lineWidth = 3;
 		game.context.strokeRect(game.highlightLine.x, game.highlightLine.y, game.highlightLine.width, game.highlightLine.height);
-		
 	},
 
 	// Select many items in highlight line
 	selectHightlightLine: function() {
-		game.selectedItems = [];
+		game.clearSelection();
 		game.mouse.moveCoord = {};
-		game.personallySelected = [];
 		for(let i = 0; i < game.items.length; i++) {
 			if(game.selectCollision(game.highlightLine, game.items[i])) {
+				game.items[i].selected = true;
 				game.selectedItems.push(game.items[i]);
 			}
 		}
+		if(game.selectedItems.length != 0)
+			game.personallySelect(game.selectedItems[0]);
+
+		screen.setSelectedItems(game.personallySelected.id, game.selectedItems);
+	},
+
+	// Personally select
+	personallySelect(item) {
+		game.personallySelected = item;
+		screen.setInformation(game.personallySelected);
 	},
 
 	// Movement selected items
@@ -303,7 +313,6 @@ let game = {
 
 		// Select many items in highlight line
 		if(game.mouse.stateSelectLine) game.selectHightlightLine();
-	
 	},
 
 	// Check items collision
@@ -345,7 +354,7 @@ let game = {
 	},
 
 	// Add Item
-	addItem: function(type, name, x, y, faction) {
+	addItem: function(type, name, x, y, faction, color, life) {
 		// Template variable
 		let temp = {};
 
@@ -370,12 +379,40 @@ let game = {
 		for (let key in temp) item[key] = temp[key];
 
 		// Adding properties
+		item.id = game.counter++;
 		item.x = x - item.width / 2;
 		item.y = y - item.height / 2;
 		item.faction = faction;
+		item.life = item.hitPoints;
+
+		// Color image item
+		if(color != undefined) {
+			item.src = item.src.split(".");
+			item.src = item.src[0] + "_" + color + ".png";
+		}
+
+		// Life item
+		if(life != undefined) item.life = life;
 
 		// Adding to an array
 		game.items.push(item);
+	},
+
+	// Remove Item
+	removeItem(item) {
+		// Remove item from selected items
+		for(let i = 0; i < game.selectedItems.length; i++) {
+			if(game.selectedItems[i].id == item.id) {
+				game.selectedItems.splice(i, 1); break;
+			}
+		}
+
+		// Remove from items array
+		for(let i = 0; i < game.items.length; i++) {
+			if(game.items[i].id == item.id) {
+				game.items.splice(i, 1); break;
+			}
+		}
 	},
 
 	// Draw Item

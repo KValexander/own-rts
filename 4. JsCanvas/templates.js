@@ -1,12 +1,14 @@
 let units = {
 	list: {
 		"worker": {
+			iname: "Казах",
 			name: "worker",
 			src: "images/worker.png",
 			hitPoints: 80,
 			width: 16,
 			height: 24,
 			damage: [5, 7],
+			defense: 1,
 			radiuse: 10,
 			speed: 3,
 			sight: 5,
@@ -18,12 +20,14 @@ let units = {
 			frames: [],
 		},
 		"soldier": {
+			iname: "Кремлебот",
 			name: "soldier",
 			src: "images/soldier.png",
 			hitPoints: 160,
 			width: 20,
 			height: 24,
 			damage: [11, 15],
+			defense: 3,
 			radiuse: 15,
 			speed: 4,
 			sight: 5,

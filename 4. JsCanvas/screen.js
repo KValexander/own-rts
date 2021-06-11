@@ -62,6 +62,36 @@ let screen = {
 		if(screen.height < window.innerHeight)
 			$("#gamecontainer").css("top", window.innerHeight / 2 - screen.height / 2 + "px");
 	},
+	// Вывод информации выбранной единицы
+	setInformation: function(item) {
+		$("#portrait").css("background-image", "url('" + item.src + "')");
+		$("#lifebar").html(item.life + " / " + item.hitPoints);
+		$("#selectedinformation").html(`
+			<h2> ${ item.iname } </h2>
+			<p>Атака: ${item.damage[0]} - ${item.damage[1]}</p>
+			<p>Защита: ${item.defense}</p>
+		`);
+	},
+	// Вывод выделенных юнитов на панельный блок
+	setSelectedItems: function(id, items) {
+		let out = "", cl = "";
+		for (let i = 0; i < items.length; i++) {
+			if(id == items[i].id) cl = "class = 'selected'";
+			else cl = ""; 
+			out += `<div ${cl} onclick="game.selectPersonallyItem(${items[i].id})" ondblclick="game.selectItem(${items[i].id})"><img src="${ items[i].src }"></div>`;
+		}
+		$("#selecteditems").html(out);
+	},
+	// Очистка информации о выбранной единице
+	clearInformation: function() {
+		$("#portrait").attr("style", "");
+		$("#lifebar").html("");
+		$("#selectedinformation").html("");
+	},
+	// Очистка окна выделеннывх юнитов
+	clearSelectedItems: function() {
+		$("#selecteditems").html("");
+	},
 };
 
 // Текст внутри pop-up окна
