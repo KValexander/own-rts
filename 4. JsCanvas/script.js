@@ -57,16 +57,16 @@ let game = {
 	// Load game data, assets, triggers, ect
 	loading: function(data, callback) {
 		game.resetData();
-		game.mouse();
-		game.keys();
+		game.mouseMethod();
+		game.keysMethod();
 
 		game.background = game.loadImage("gui/bg_game.jpg");
 		game.background.onload = () => callback(true);
 	},
 
-	// Reset game data array
+	// Reset game data elements
 	resetData: function() {
-		// For UID
+		// For ID
 		game.counter = 1;
 
 		// Game data Arrays
@@ -77,27 +77,87 @@ let game = {
 		// Game data Objects
 		game.personallySelected = {};
 		game.highlightLine = {};
+		game.camera = {};
+		game.mouse = {};
+		game.grid = {};
+		game.map = {};
+		game.key = {};
+	},
+
+	// Map method
+	mapMethod: function() {
+		game.map = {};
+		game.map.size = {};
+		game.map.tiles = {};
+	},
+	
+	// Draw map method
+	drawMap: function() {
+
 	},
 
 	// Camera method
-	camera: function() {
-		game.camera = {};
+	cameraMethod: function() {
+		game.camera = {
+			x: 0,
+			y: 0,
+			width: 100,
+			height: 100,
+		};
 	},
 
 	// Keys method
-	keys: function() {
-		game.keyDown = {};
-		// Writes a key code in keyDown
+	keysMethod: function() {
+		game.key = {};
+		game.key.down = {};
+		game.key.stroke = false;
+		// Writes a key code in key.down
 		$("body").keydown((e) => {
-			game.keyDown = e.code;
-			console.log(game.keyDown);
+			game.key.down = e.code;
+			game.key.stroke = true;
+			game.keyStroke();
+			game.key.stroke = false;
+			console.log(game.key.down);
 		});
-		// Clear a key code in keyDown
-		$("body").keyup((e) => game.keyDown = {});
+		// Clear a key code in key.down
+		$("body").keyup((e) => game.key.down = {});
+	},
+
+	// One-time keystroke, maybe
+	keyStroke: function() {
+		if(!game.key.stroke || !game.running) return;
+
+		// Delete selected items
+		if(game.key.down == "Delete") {
+			let count = game.selectedItems.length;
+			for(let i = 0; i < count; i++)
+				game.removeItem(game.selectedItems[i]);
+			game.clearSelection();
+		}
+
+		// Clear selection
+		if(game.key.down == "Escape") {
+			game.clearSelection();
+		}
+
+		// Switch between selected items
+		if(game.key.down == "Tab" && game.selectedItems.length != 0) {
+			let id = 0, currentID = game.personallySelected.id;
+
+			// Checking the end of the selected items
+			if(++currentID > game.selectedItems[game.selectedItems.length - 1].id) id = game.selectedItems[0].id;
+			else id = currentID;
+
+			// How do you work???
+			// Checking for id
+			while(game.selectedItems.find(item => item.id == id) == undefined) id = id + 1;
+
+			game.selectPersonallyItem(id);
+		}
 	},
 
 	// Mouse method
-	mouse: function() {
+	mouseMethod: function() {
 		// Mouse data
 		game.mouse = {};
 		// Mouse events
@@ -138,7 +198,7 @@ let game = {
 			break;
 			// Right mouse button
 			case 3:
-				game.selectedItems.forEach((item) => item.move = true);
+				// game.selectedItems.forEach((item) => item.move = true);
 				game.mouse.moveCoord = {x: game.mouse.e.offsetX - 8, y: game.mouse.e.offsetY - 8};
 			break;
 			default: break;
@@ -148,12 +208,8 @@ let game = {
 
 	// Select personally item from selected items in #selectitems
 	selectPersonallyItem: function(id) {
-		for(let i = 0; i < game.selectedItems.length; i++) {
-			if(game.selectedItems[i].id == id) {
-				game.personallySelect(game.selectedItems[i]);
-				break;
-			}
-		}
+		let item = game.getItemById(id);
+		game.personallySelect(item);
 		screen.setSelectedItems(game.personallySelected.id, game.selectedItems);
 	},
 
@@ -174,6 +230,7 @@ let game = {
 	clearSelection: function() {
 		screen.clearInformation();
 		screen.clearSelectedItems();
+		screen.clearActItem();
 		game.personallySelected = {};
 		while(game.selectedItems.length > 0) {
 			game.selectedItems.pop().selected = false;
@@ -200,18 +257,18 @@ let game = {
 	// Holding mouse event
 	mouseHolding: function() {
 		// Draggable, if the left mouse button is pressed and left shift
-		if(game.mouse.e.which == 1 && game.keyDown == "ShiftLeft") {
+		if(game.mouse.e.which == 1 && game.key.down == "ShiftLeft") {
 			game.personallySelected.x = game.mouse.coord.x - game.personallySelected.width / 2;
 			game.personallySelected.y = game.mouse.coord.y - game.personallySelected.height / 2;
 		}
-		else if(game.mouse.e.which == 2 && game.keyDown == "ShiftLeft") {
+		else if(game.mouse.e.which == 2 && game.key.down == "ShiftLeft") {
 			game.addItem("unit", "soldier", game.mouse.coord.x, game.mouse.coord.y, "red", "red");
 		}
 		// State rendering hightlight line
 		else if(game.mouse.e.which == 1) {
-			game.mouse.stateSelectLine = true;
+			game.mouse.stateHightlightLine = true;
 		} else {
-			game.mouse.stateSelectLine = false;
+			game.mouse.stateHightlightLine = false;
 		}
 	},
 
@@ -266,13 +323,17 @@ let game = {
 
 	// Personally select
 	personallySelect(item) {
+		screen.clearActItem();
+
 		game.personallySelected = item;
+
 		screen.setInformation(game.personallySelected);
+		screen.setActItem(game.personallySelected.name);
 	},
 
 	// Movement selected items
 	selectedMove: function(item, x, y) {
-		if(item.x == x && item.y == y) item.move = false;
+		// if(item.x == x && item.y == y) item.move = false;
 
 		if(item.x < x) item.x += item.speed;
 		if(item.x > x) item.x -= item.speed;
@@ -289,42 +350,39 @@ let game = {
 		// Handling data items
 		for(let i = 0; i < game.items.length; i++) {
 			// Handling collision items
-			for(let j = 0; j < game.items.length; j++) {
-				let item1 = game.items[i];
-				if(game.itemsCollision(game.items[i], game.items[j])) {
-					let item2 = game.items[j];
-					let acenter = {x: item1.x + item1.width / 2, y: item1.y + item1.height / 2};
-					let bcenter = {x: item2.x + item2.width / 2, y: item2.y + item2.height / 2};
-					let d = {x: acenter.x - bcenter.x, y: acenter.y - bcenter.y};
-					if(d.x > 0) item1.x += item1.speed;
-					if(d.x < 0) item1.x -= item1.speed;
-					if(d.y > 0) item1.y += item1.speed;
-					if(d.y < 0) item1.y -= item1.speed;
-				}
-			}
+			for(let j = 0; j < game.items.length; j++)
+				game.itemsCollision(game.items[i], game.items[j]);
 		}
 
 		// Handling data selected items
 		for(let i = 0; i < game.selectedItems.length; i++) {
 			let item = game.selectedItems[i];
 			// Movement selected items
-			if(item) game.selectedMove(item, game.mouse.moveCoord.x, game.mouse.moveCoord.y);
+			game.selectedMove(item, game.mouse.moveCoord.x, game.mouse.moveCoord.y);
+
+			// Handling selected collision items, eats a lot of RAM, not optimized
+			for(let j = 0; j < game.selectedItems.length; j++)
+				game.itemsCollision(game.selectedItems[i], game.selectedItems[j]);
 		}
 
 		// Select many items in highlight line
-		if(game.mouse.stateSelectLine) game.selectHightlightLine();
+		if(game.mouse.stateHightlightLine) game.selectHightlightLine();
 	},
 
-	// Check items collision
+	// Check/Handling items collision
 	itemsCollision: function(item1, item2) {
 		if(	item1.x <= (item2.x + item2.width)
 			&& item2.x <= (item1.x + item1.width)
 			&& item1.y <= (item2.y + item2.height)
 			&& item2.y <= (item1.y + item1.height))
 		{
-			return true;
-		} else {
-			return false;
+			let acenter = {x: item1.x + item1.width / 2, y: item1.y + item1.height / 2};
+			let bcenter = {x: item2.x + item2.width / 2, y: item2.y + item2.height / 2};
+			let d = {x: acenter.x - bcenter.x, y: acenter.y - bcenter.y};
+			if(d.x >= 0) item1.x += item1.repulsionSpeed;
+			if(d.x <= 0) item1.x -= item1.repulsionSpeed;
+			if(d.y >= 0) item1.y += item1.repulsionSpeed;
+			if(d.y <= 0) item1.y -= item1.repulsionSpeed;
 		}
 	},
 
@@ -332,6 +390,9 @@ let game = {
 	rendering: function() {
 		// Background
 		game.context.drawImage(game.background, 0, 0, screen.canvasWidth, screen.canvasHeight);
+
+		// Rendering map
+		game.drawMap();
 
 		// Rendering grid
 		game.drawGrid();
@@ -343,7 +404,7 @@ let game = {
 		game.selectedItems.forEach((item) => game.drawSelection(item));
 
 		// Rendering highlight line for select many items
-		if(game.mouse.stateSelectLine) game.drawHighlightLine();
+		if(game.mouse.stateHightlightLine) game.drawHighlightLine();
 	},
 
 	// Load image
@@ -398,19 +459,18 @@ let game = {
 		game.items.push(item);
 	},
 
+	// Get Item by Id
+	getItemById(id) {
+		// Glory to modern programming methods!
+		return game.items.find(item => item.id == id);
+	},
+
 	// Remove Item
 	removeItem(item) {
-		// Remove item from selected items
-		for(let i = 0; i < game.selectedItems.length; i++) {
-			if(game.selectedItems[i].id == item.id) {
-				game.selectedItems.splice(i, 1); break;
-			}
-		}
-
 		// Remove from items array
 		for(let i = 0; i < game.items.length; i++) {
 			if(game.items[i].id == item.id) {
-				game.items.splice(i, 1); break;
+				game.items.splice(i, 1); return;
 			}
 		}
 	},
@@ -430,26 +490,26 @@ let game = {
 	// Draw grid method
 	drawGrid: function() {
 		// Grid variable
-		let color = "#fff";
-		let lineX = 16;
-		let lineY = 16;
-		let collsX = game.canvas.width / lineX;
-		let collsY = game.canvas.height / lineX;
+		game.grid.color = "#fff";
+		game.grid.lineX = 16;
+		game.grid.lineY = 16;
+		game.grid.collsX = game.canvas.width / game.grid.lineX;
+		game.grid.collsY = game.canvas.height / game.grid.lineX;
 
 		// Arranging grid lines
 		game.context.beginPath();
 		game.context.lineWidth = 1;
-		for(let i = 0; i < collsX * lineX; i += lineX) {
+		for(let i = 0; i < game.grid.collsX * game.grid.lineX; i += game.grid.lineX) {
 			game.context.moveTo(i, 0);
 			game.context.lineTo(i, game.canvas.height);
 		}
-		for(let i = 0; i < collsY * lineY; i += lineY) {
+		for(let i = 0; i < game.grid.collsY * game.grid.lineY; i += game.grid.lineY) {
 			game.context.moveTo(0, i);
 			game.context.lineTo(game.canvas.width, i);
 		}
 
 		// Draw grid
-		game.context.strokeStyle = color;
+		game.context.strokeStyle = game.grid.color;
 		game.context.stroke();
 	},
 
@@ -462,6 +522,12 @@ let game = {
 		game.rendering();
 
 		if(game.running) window.requestAnimationFrame(game.loop);
+	},
+
+	// End game
+	endGame: function() {
+		game.resetData();
+		game.running = false;
 	},
 
 };

@@ -10,7 +10,8 @@ let screen = {
 		screen.canvasHeight = $("canvas").height();
 
 		// Отключение контекстного меню
-		$("canvas").contextmenu(() => false);
+		$("body").contextmenu(() => false);
+		$("input").attr("tabindex", "-1");
 
 		screen.checkStorage();
 		screen.changeResolution();
@@ -72,6 +73,12 @@ let screen = {
 			<p>Защита: ${item.defense}</p>
 		`);
 	},
+	// Вывод действий в панель действий
+	setActItem: function(name) {
+		if(name == "worker") {
+			$("td#a31").html("<img src='gui/build.png' onclick='screen.setBuildActItem()'></img>");
+		}
+	},
 	// Вывод выделенных юнитов на панельный блок
 	setSelectedItems: function(id, items) {
 		let out = "", cl = "";
@@ -87,6 +94,11 @@ let screen = {
 		$("#portrait").attr("style", "");
 		$("#lifebar").html("");
 		$("#selectedinformation").html("");
+	},
+	// Очистка панели действий
+	clearActItem: function() {
+		let clearCells = document.querySelectorAll("#actioncells table tr td");
+		for(let i = 0; i < clearCells.length; i++) clearCells[i].innerHTML = "";
 	},
 	// Очистка окна выделеннывх юнитов
 	clearSelectedItems: function() {
