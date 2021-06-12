@@ -7,6 +7,7 @@
 	margin: 0;
 	padding: 0;
 	box-sizing: border-box;
+	-ms-user-select: none;
 }
 
 body {
@@ -150,7 +151,7 @@ div#gamecontainer div#loadscreen div.buttons {
 div#gamecontainer div#interfacetop {
 	height: 3%;
 	background-color: #6e909d;
-	border-bottom: solid 3px #c2b9b0;
+	border-bottom: solid 2px #c2b9b0;
 }
 
 div#gamecontainer div#interfacetop input{
@@ -161,10 +162,6 @@ div#gamecontainer div#interfacetop input{
 	height: 100%;
 	font-size: 12pt;
 	border: solid 1px #c2b9b0;
-}
-
-div#gamecontainer div#interfacetop input:hover {
-	background-color: #b2cee6;
 }
 
 div#gamecontainer canvas {

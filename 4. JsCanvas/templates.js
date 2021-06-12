@@ -2,6 +2,7 @@ let units = {
 	list: {
 		"worker": {
 			iname: "Казах",
+			description: "Хороший казах всегда пригодится",
 			name: "worker",
 			src: "images/worker.png",
 			hitPoints: 80,
@@ -23,6 +24,7 @@ let units = {
 		},
 		"soldier": {
 			iname: "Кремлебот",
+			description: "Призовите толпы кремлеботов для спама своих врагов",
 			name: "soldier",
 			src: "images/soldier.png",
 			hitPoints: 160,
@@ -57,5 +59,29 @@ let units = {
 };
 
 let buildings = {
-
+	list: {
+		"capitol": {
+			iname: "Капитолий",
+			description: "Здание для производства казахов и кремлеботов",
+			name: "capitol",
+			src: "images/capitol.png",
+			hitPoints: 5000,
+			cost: {"gold": 325, "tree": 120, "metal": 80},
+			sight: 10,
+			width: 48,
+			height: 48,
+			gridWidth: 3,
+			gridHeight: 3,
+			damage: [0, 0],
+			defense: 10,
+		},
+	},
+	default: {
+		type: "unit",
+		animationIndex: 0,
+		direction: 0,
+		action: "stand",
+		selected: false,
+		selectable: true,
+	},
 };

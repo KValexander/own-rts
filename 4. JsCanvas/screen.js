@@ -79,6 +79,11 @@ let screen = {
 			$("td#a31").html("<img src='gui/build.png' onclick='screen.setBuildActItem()'></img>");
 		}
 	},
+	// Вывод возможных построек в панель действий
+	setBuildActItem: function() {
+		screen.clearActItem();
+		$("td#a11").html(`<img src='images/capitol.png' onclick="game.addItem('building', 'capitol', ${game.personallySelected.x}, ${game.personallySelected.y+40}, 'neutral')">`);
+	},
 	// Вывод выделенных юнитов на панельный блок
 	setSelectedItems: function(id, items) {
 		let out = "", cl = "";

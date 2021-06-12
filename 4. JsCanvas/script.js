@@ -123,8 +123,9 @@ let game = {
 		// Delete selected items
 		if(game.key.down == "Delete") {
 			let count = game.selectedItems.length;
-			for(let i = 0; i < count; i++)
-				game.removeItem(game.selectedItems[i]);
+			for(let i = 0; i < count; i++) {
+				game.removeItems(game.selectedItems[i]);
+			}
 			game.clearSelection();
 		}
 
@@ -380,7 +381,7 @@ let game = {
 
 			// Damage
 			if(item1.faction != item2.faction) {
-				item2.hitPoints -= item1.damage[0];
+				item2.hitPoints -= (item1.damage[0] - item2.defense);
 				if(d.x >= 0) item1.x += 10;
 				if(d.x <= 0) item1.x -= 10;
 				if(d.y >= 0) item1.y += 10;
@@ -392,7 +393,11 @@ let game = {
 	// Rendering game assets
 	rendering: function() {
 		// Background
-		game.context.drawImage(game.background, 0, 0, screen.canvasWidth, screen.canvasHeight);
+		// game.context.drawImage(game.background, 0, 0, screen.canvasWidth, screen.canvasHeight);
+
+		// Background blank
+		game.context.fillStyle = "black";
+		game.context.fillRect(0, 0, screen.canvasWidth, screen.canvasHeight);
 
 		// Rendering map, minus RAM
 		// game.drawMap();
@@ -441,7 +446,7 @@ let game = {
 		// Writing template data to a new object
 		let item = {};
 		for (let key in temp) item[key] = temp[key];
-
+			
 		// Adding properties
 		item.id = game.counter++;
 		item.x = x - item.width / 2;
@@ -470,17 +475,38 @@ let game = {
 
 	// Remove Item
 	removeItem(item) {
+		// Remove from personally select
+		if(item.id == game.personallySelect.id) {
+			game.personallySelect = {};
+			screen.clearInformation();
+		}
+
+		// Remove from selected items array
+		game.selectedItems.forEach((it, i) => {
+			if(it.id == item.id)
+				game.selectedItems.splice(i, 1);
+		});
+		screen.setSelectedItems(game.personallySelected.id, game.selectedItems);
+
 		// Remove from items array
 		for(let i = 0; i < game.items.length; i++) {
 			if(game.items[i].id == item.id) {
 				game.items.splice(i, 1); return;
 			}
 		}
+
 	},
 
-	// Death of an item
-	deathItem(item) {
-		game.removeItem(item);
+	// Remove items
+	removeItems(item) {
+		// game.items.find((it, i) => game.items.splice(i, 1));
+
+		// Remove from items array
+		for(let i = 0; i < game.items.length; i++) {
+			if(game.items[i].id == item.id) {
+				game.items.splice(i, 1); return;
+			}
+		}
 	},
 
 	// Draw Item
@@ -524,9 +550,11 @@ let game = {
 	
 	// Draw map method, Minus RAM
 	drawMap: function() {
+		game.context.fillStyle = "orange";
 		for(let i = 0; i < game.grid.collsX * game.grid.lineX; i += game.grid.lineX) {
 			for(let j = 0; j < game.grid.collsY * game.grid.lineY; j += game.grid.lineY) {
-				game.context.drawImage(game.loadImage("images/tiles/0.png"), i, j, game.grid.lineX, game.grid.lineY)
+				game.context.fillRect(i, j, game.grid.lineX, game.grid.lineY);
+				// game.context.drawImage(game.loadImage("images/tiles/0.png"), i, j, game.grid.lineX, game.grid.lineY)
 			}
 		}
 	},
