@@ -87,13 +87,6 @@ let game = {
 	// Map method
 	mapMethod: function() {
 		game.map = {};
-		game.map.size = {};
-		game.map.tiles = {};
-	},
-	
-	// Draw map method
-	drawMap: function() {
-
 	},
 
 	// Camera method
@@ -334,6 +327,7 @@ let game = {
 	// Movement selected items
 	selectedMove: function(item, x, y) {
 		// if(item.x == x && item.y == y) item.move = false;
+		if(item.type != "unit") return;
 
 		if(item.x < x) item.x += item.speed;
 		if(item.x > x) item.x -= item.speed;
@@ -383,6 +377,15 @@ let game = {
 			if(d.x <= 0) item1.x -= item1.repulsionSpeed;
 			if(d.y >= 0) item1.y += item1.repulsionSpeed;
 			if(d.y <= 0) item1.y -= item1.repulsionSpeed;
+
+			// Damage
+			if(item1.faction != item2.faction) {
+				item2.hitPoints -= item1.damage[0];
+				if(d.x >= 0) item1.x += 10;
+				if(d.x <= 0) item1.x -= 10;
+				if(d.y >= 0) item1.y += 10;
+				if(d.y <= 0) item1.y -= 10;
+			}
 		}
 	},
 
@@ -391,8 +394,8 @@ let game = {
 		// Background
 		game.context.drawImage(game.background, 0, 0, screen.canvasWidth, screen.canvasHeight);
 
-		// Rendering map
-		game.drawMap();
+		// Rendering map, minus RAM
+		// game.drawMap();
 
 		// Rendering grid
 		game.drawGrid();
@@ -475,8 +478,14 @@ let game = {
 		}
 	},
 
+	// Death of an item
+	deathItem(item) {
+		game.removeItem(item);
+	},
+
 	// Draw Item
 	drawItem: function(item) {
+		if(item.hitPoints <= 0) return game.deathItem(item);
 		game.context.drawImage(game.loadImage(item.src), item.x, item.y, item.width, item.height);
 	},
 
@@ -511,6 +520,15 @@ let game = {
 		// Draw grid
 		game.context.strokeStyle = game.grid.color;
 		game.context.stroke();
+	},
+	
+	// Draw map method, Minus RAM
+	drawMap: function() {
+		for(let i = 0; i < game.grid.collsX * game.grid.lineX; i += game.grid.lineX) {
+			for(let j = 0; j < game.grid.collsY * game.grid.lineY; j += game.grid.lineY) {
+				game.context.drawImage(game.loadImage("images/tiles/0.png"), i, j, game.grid.lineX, game.grid.lineY)
+			}
+		}
 	},
 
 	// Game loop
