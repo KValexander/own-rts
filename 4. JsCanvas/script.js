@@ -188,7 +188,7 @@ let game = {
 			break;
 			// Middle mouse button
 			case 2:
-				game.addItem("unit", "worker", game.mouse.e.offsetX, game.mouse.e.offsetY, "neutral");
+				// game.addItem("unit", "worker", game.mouse.e.offsetX, game.mouse.e.offsetY, "neutral");
 			break;
 			// Right mouse button
 			case 3:
@@ -257,6 +257,9 @@ let game = {
 		}
 		else if(game.mouse.e.which == 2 && game.key.down == "ShiftLeft") {
 			game.addItem("unit", "soldier", game.mouse.coord.x, game.mouse.coord.y, "red", "red");
+		}
+		else if (game.mouse.e.which == 2 && game.key.down == "ControlLeft") {
+			game.addItem("unit", "worker", game.mouse.coord.x, game.mouse.coord.y, "neutral");
 		}
 		// State rendering hightlight line
 		else if(game.mouse.e.which == 1) {
@@ -386,6 +389,7 @@ let game = {
 				if(d.x <= 0) item1.x -= 10;
 				if(d.y >= 0) item1.y += 10;
 				if(d.y <= 0) item1.y -= 10;
+				// screen.setInformation(game.personallySelected);
 			}
 		}
 	},
@@ -511,13 +515,15 @@ let game = {
 
 	// Draw Item
 	drawItem: function(item) {
-		if(item.hitPoints <= 0) return game.deathItem(item);
+		if(item.hitPoints <= 0) return game.removeItem(item);
 		game.context.drawImage(game.loadImage(item.src), item.x, item.y, item.width, item.height);
 	},
 
 	// Draw selection for selected items
 	drawSelection: function(item) {
-		game.context.strokeStyle = "green";
+		if(item.hitPoints >= 100) game.context.strokeStyle = "green";
+		if(item.hitPoints < 100 && item.hitPoints > 30) game.context.strokeStyle = "orange";
+		if(item.hitPoints <= 30) game.context.strokeStyle = "red";
 		game.context.lineWidth = 2;
 		game.context.strokeRect(item.x, item.y, item.width, item.height);
 	},

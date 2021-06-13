@@ -66,7 +66,11 @@ let screen = {
 	// Вывод информации выбранной единицы
 	setInformation: function(item) {
 		$("#portrait").css("background-image", "url('" + item.src + "')");
-		$("#lifebar").html(item.life + " / " + item.hitPoints);
+		$("#lifebar").html(item.hitPoints + " / " + item.life);
+		if(item.hitPoints >= 100) $("#lifebar").css("color", "green");
+		if(item.hitPoints < 100 && item.hitPoints > 30) $("#lifebar").css("color", "orange");
+		if(item.hitPoints <= 30) $("#lifebar").css("color", "red");
+		
 		$("#selectedinformation").html(`
 			<h2> ${ item.iname } </h2>
 			<p>Атака: ${item.damage[0]} - ${item.damage[1]}</p>
