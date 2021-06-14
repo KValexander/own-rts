@@ -65,6 +65,7 @@ let screen = {
 	},
 	// Вывод информации выбранной единицы
 	setInformation: function(item) {
+		if(Object.keys(item).length == 0) return
 		$("#portrait").css("background-image", "url('" + item.src + "')");
 		$("#lifebar").html(item.hitPoints + " / " + item.life);
 		if(item.hitPoints >= 100) $("#lifebar").css("color", "green");
@@ -78,15 +79,32 @@ let screen = {
 		`);
 	},
 	// Вывод действий в панель действий
-	setActItem: function(name) {
-		if(name == "worker") {
-			$("td#a31").html("<img src='gui/build.png' onclick='screen.setBuildActItem()'></img>");
+	setActItem: function(item) {
+		switch(item.type) {
+			case "unit": // если юнит
+				if(item.name == "worker")
+					$("td#a31").html(`<img id="build" src='gui/build.png' onclick='screen.setBuildActItem("${item.faction}")'></img>`);
+				$("td#a11").html(`<img id="stop" src='gui/stop.png' onclick='game.itemMoveStop()'></img>`);
+			break;
+			case "building": // если здание
+				let color = "";
+				switch(item.name) {
+					case "capitol": // капитолий
+						$("td#a11").html(`<img src='images/worker.png' onclick='game.addItem("unit", "worker", ${item.x + item.width / 2}, ${item.y + item.height + 10}, "${item.faction}", "${item.faction}")' />`);
+						$("td#a12").html(`<img src='images/soldier.png' onclick='game.addItem("unit", "soldier", ${item.x + item.width / 2}, ${item.y + item.height + 10}, "${item.faction}", "${item.faction}")' />`);
+					break;
+				}
+			break;
+			case "hero": // если герой
+
+			break;
 		}
 	},
 	// Вывод возможных построек в панель действий
-	setBuildActItem: function() {
+	setBuildActItem: function(faction) {
 		screen.clearActItem();
-		$("td#a11").html(`<img src='images/capitol.png' onclick="game.addItem('building', 'capitol', ${game.personallySelected.x}, ${game.personallySelected.y+40}, 'neutral')">`);
+		$("td#a11").html(`<img src='images/capitol.png' onclick="game.pickBuild('capitol', '${faction}')">`);
+		$("td#a12").html(`<img src='images/temple.png' onclick="game.pickBuild('temple', '${faction}')">`);
 	},
 	// Вывод выделенных юнитов на панельный блок
 	setSelectedItems: function(id, items) {
@@ -140,7 +158,7 @@ $(function() {
 			$("#popup").html("На данный момент недоступно").show();
 		// Если рабочая
 		} else {
-			// Кнопка "Генеральная военна академия"
+			// Кнопка "Генеральная военная академия"
 			if($(this).is("#generalyAcademy")) $("#popup").html(description.training.popup).show();
 			// Кнопка "Безудержность империи"
 			if($(this).is("#rampantEmpire")) $("#popup").html(description.empire.popup).show();
@@ -151,4 +169,20 @@ $(function() {
 	});
 	// Hover на pop-up окно
 	$("#popup").hover(function() { $(this).show() }, function() { $(this).hide() });
+});
+
+// Pop-up play окно
+$(function() {
+	// Hover на кнопки
+	$("td").hover(function() {
+		$("#popupplay").html("На данный момент недоступно").show();
+
+		if($(this).is("#a11")) $("#popupplay").html("Остановить юнита, S").show();
+		if($(this).is("#a31")) $("#popupplay").html("Построить здание").show();
+
+	}, function() {
+		$("#popupplay").hide().html("");
+	});
+	// Hover на pop-up окно
+	$("#popupplay").hover(function() { $(this).show() }, function() { $(this).hide() });
 });

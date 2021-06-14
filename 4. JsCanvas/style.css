@@ -295,3 +295,18 @@ div#gamecontainer div#popup {
 	border: solid 3px black;
 	background-color: rgba(0,0,0,0.7);
 }
+
+div#gamecontainer div#popupplay {
+	position: absolute;
+	display: none;
+	transition: .2s;
+	top: calc(100% - 17% - 50px);
+	left: calc(100% - 425px);
+	font-size: 10pt;
+	color: white;
+	width: 400px;
+	padding: 10px;
+	text-align: justify;
+	border: solid 3px black;
+	background-color: rgba(0,0,0,0.7);
+}

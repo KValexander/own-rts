@@ -76,6 +76,7 @@ let game = {
 		
 		// Game data Objects
 		game.personallySelected = {};
+		game.placementBuild = {};
 		game.highlightLine = {};
 		game.camera = {};
 		game.mouse = {};
@@ -134,6 +135,11 @@ let game = {
 			game.clearSelection();
 		}
 
+		// Stop motion items
+		if(game.key.down == "KeyS") {
+			game.itemMoveStop();
+		}
+
 		// Switch between selected items
 		if(game.key.down == "Tab" && game.selectedItems.length != 0) {
 			let id = 0, currentID = game.personallySelected.id;
@@ -158,8 +164,6 @@ let game = {
 		game.mouse.e = {};
 		// Mouse coordinats
 		game.mouse.coord = {};
-		// Mouse move items coord
-		game.mouse.moveCoord = {};
 
 		// Click handling
 		$("canvas").mousedown((e) => {
@@ -185,15 +189,28 @@ let game = {
 		switch(game.mouse.e.which) {
 			// Left mouse button
 			case 1:
+				if(game.placementBuild.state) {
+					game.addItem(
+						game.placementBuild.type,
+						game.placementBuild.name,
+						game.mouse.coord.x,
+						game.mouse.coord.y,
+						game.placementBuild.faction,
+						game.placementBuild.faction,
+					);
+					game.clearPickBuild();
+				}
 			break;
 			// Middle mouse button
 			case 2:
-				// game.addItem("unit", "worker", game.mouse.e.offsetX, game.mouse.e.offsetY, "neutral");
+				if(game.key.down == "AltLeft") {
+					game.addItem("building", "capitol", game.mouse.coord.x, game.mouse.coord.y, "neutral");
+				}
 			break;
 			// Right mouse button
 			case 3:
-				// game.selectedItems.forEach((item) => item.move = true);
-				game.mouse.moveCoord = {x: game.mouse.e.offsetX - 8, y: game.mouse.e.offsetY - 8};
+				if(game.placementBuild.state) game.clearPickBuild();
+				else game.selectedItems.forEach((item) => item.move = {x: game.mouse.e.offsetX - 8, y: game.mouse.e.offsetY - 8});
 			break;
 			default: break;
 		};
@@ -225,6 +242,8 @@ let game = {
 		screen.clearInformation();
 		screen.clearSelectedItems();
 		screen.clearActItem();
+		game.clearPickBuild();
+		// game.itemMoveStop();
 		game.personallySelected = {};
 		while(game.selectedItems.length > 0) {
 			game.selectedItems.pop().selected = false;
@@ -256,10 +275,10 @@ let game = {
 			game.personallySelected.y = game.mouse.coord.y - game.personallySelected.height / 2;
 		}
 		else if(game.mouse.e.which == 2 && game.key.down == "ShiftLeft") {
-			game.addItem("unit", "soldier", game.mouse.coord.x, game.mouse.coord.y, "red", "red");
+			game.addItem("unit", "worker", game.mouse.coord.x, game.mouse.coord.y, "red", "red");
 		}
 		else if (game.mouse.e.which == 2 && game.key.down == "ControlLeft") {
-			game.addItem("unit", "worker", game.mouse.coord.x, game.mouse.coord.y, "neutral");
+			game.addItem("unit", "worker", game.mouse.coord.x, game.mouse.coord.y, "blue", "blue");
 		}
 		// State rendering hightlight line
 		else if(game.mouse.e.which == 1) {
@@ -305,13 +324,27 @@ let game = {
 	// Select many items in highlight line
 	selectHightlightLine: function() {
 		game.clearSelection();
-		game.mouse.moveCoord = {};
+		// Enumeration and add
 		for(let i = 0; i < game.items.length; i++) {
 			if(game.selectCollision(game.highlightLine, game.items[i])) {
 				game.items[i].selected = true;
 				game.selectedItems.push(game.items[i]);
 			}
 		}
+
+		// Filtration, improve
+		let unitAvailability = false;
+		let buildingAvailability = false;
+		game.selectedItems.forEach((item, i) => {
+			if(item.type == "unit") unitAvailability = true;
+			if(item.type == "building") buildingAvailability = true;
+		});
+		if(unitAvailability && buildingAvailability) {
+			game.selectedItems.forEach((it, i) => {
+				if(it.type == "building") game.selectedItems.splice(i, 1);
+			});
+		}
+
 		if(game.selectedItems.length != 0)
 			game.personallySelect(game.selectedItems[0]);
 
@@ -325,18 +358,25 @@ let game = {
 		game.personallySelected = item;
 
 		screen.setInformation(game.personallySelected);
-		screen.setActItem(game.personallySelected.name);
+		screen.setActItem(game.personallySelected);
 	},
 
-	// Movement selected items
-	selectedMove: function(item, x, y) {
-		// if(item.x == x && item.y == y) item.move = false;
+	// Movement items
+	itemMove: function(item, x, y) {
 		if(item.type != "unit") return;
 
-		if(item.x < x) item.x += item.speed;
-		if(item.x > x) item.x -= item.speed;
-		if(item.y < y) item.y += item.speed;
-		if(item.y > y) item.y -= item.speed;
+		if(game.mouseCollision(item, x, y))
+			return game.itemMoveStop();
+
+		if(item.x < item.move.x) item.x += item.speed;
+		if(item.x > item.move.x) item.x -= item.speed;
+		if(item.y < item.move.y) item.y += item.speed;
+		if(item.y > item.move.y) item.y -= item.speed;
+	},
+
+	// Stop motion item
+	itemMoveStop: function(id) {
+		game.selectedItems.forEach((it) => it.move = {});
 	},
 
 	// Update game data
@@ -345,18 +385,23 @@ let game = {
 		// Hold the mouse
 		game.mouseHolding();
 
+		// Set information personally selected item
+		screen.setInformation(game.personallySelected);
+
 		// Handling data items
 		for(let i = 0; i < game.items.length; i++) {
 			// Handling collision items
 			for(let j = 0; j < game.items.length; j++)
 				game.itemsCollision(game.items[i], game.items[j]);
+
+			// Movement items
+			game.itemMove(game.items[i]);
 		}
 
 		// Handling data selected items
 		for(let i = 0; i < game.selectedItems.length; i++) {
 			let item = game.selectedItems[i];
 			// Movement selected items
-			game.selectedMove(item, game.mouse.moveCoord.x, game.mouse.moveCoord.y);
 
 			// Handling selected collision items, eats a lot of RAM, not optimized
 			for(let j = 0; j < game.selectedItems.length; j++)
@@ -384,12 +429,14 @@ let game = {
 
 			// Damage
 			if(item1.faction != item2.faction) {
-				item2.hitPoints -= (item1.damage[0] - item2.defense);
+				if(item1.type == "building") return;
+				let damage = (Math.floor(Math.random() * (item1.damage[1] - item1.damage[0])) + item1.damage[0]) - item2.defense;
+				if(damage <= 0) damage = 0;
+				item2.hitPoints -= damage;
 				if(d.x >= 0) item1.x += 10;
 				if(d.x <= 0) item1.x -= 10;
 				if(d.y >= 0) item1.y += 10;
 				if(d.y <= 0) item1.y -= 10;
-				// screen.setInformation(game.personallySelected);
 			}
 		}
 	},
@@ -404,7 +451,7 @@ let game = {
 		game.context.fillRect(0, 0, screen.canvasWidth, screen.canvasHeight);
 
 		// Rendering map, minus RAM
-		// game.drawMap();
+		game.drawMap();
 
 		// Rendering grid
 		game.drawGrid();
@@ -415,6 +462,9 @@ let game = {
 		// Rendering selection for selected items
 		game.selectedItems.forEach((item) => game.drawSelection(item));
 
+		// Rendering placing pick building
+		if(game.placementBuild.state) game.placeBuild(game.mouse.coord.x, game.mouse.coord.y);
+
 		// Rendering highlight line for select many items
 		if(game.mouse.stateHightlightLine) game.drawHighlightLine();
 	},
@@ -424,6 +474,26 @@ let game = {
 		let image = new Image();
 		image.src = src;
 		return image;
+	},
+
+	// Pick a building to be placed on the map
+	pickBuild: function(buildName, faction) {
+		game.placementBuild = buildings.list[buildName];
+		game.placementBuild.type = "building";
+		game.placementBuild.state = true;
+		game.placementBuild.faction = faction;
+	},
+
+	// Clear pick building
+	clearPickBuild: function() {
+		game.placementBuild = {};
+	},
+
+	// Placing the building on the map
+	placeBuild: function(x, y) {
+		x = x - game.placementBuild.width / 2;
+		y = y - game.placementBuild.height / 2;
+		game.context.drawImage(game.loadImage(game.placementBuild.src), x, y, game.placementBuild.width, game.placementBuild.height);
 	},
 
 	// Add Item
@@ -459,7 +529,7 @@ let game = {
 		item.life = item.hitPoints;
 
 		// Color image item
-		if(color != undefined) {
+		if(color != undefined && faction != "neutral") {
 			item.src = item.src.split(".");
 			item.src = item.src[0] + "_" + color + ".png";
 		}
@@ -480,8 +550,8 @@ let game = {
 	// Remove Item
 	removeItem(item) {
 		// Remove from personally select
-		if(item.id == game.personallySelect.id) {
-			game.personallySelect = {};
+		if(item.id == game.personallySelected.id) {
+			game.personallySelected = {};
 			screen.clearInformation();
 		}
 
@@ -556,11 +626,11 @@ let game = {
 	
 	// Draw map method, Minus RAM
 	drawMap: function() {
-		game.context.fillStyle = "orange";
+		game.context.fillStyle = "gray";
 		for(let i = 0; i < game.grid.collsX * game.grid.lineX; i += game.grid.lineX) {
 			for(let j = 0; j < game.grid.collsY * game.grid.lineY; j += game.grid.lineY) {
-				game.context.fillRect(i, j, game.grid.lineX, game.grid.lineY);
-				// game.context.drawImage(game.loadImage("images/tiles/0.png"), i, j, game.grid.lineX, game.grid.lineY)
+				if(j % 10 == 0 && i % 5 == 0)
+					game.context.fillRect(i, j, game.grid.lineX, game.grid.lineY);
 			}
 		}
 	},
