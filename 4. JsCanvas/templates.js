@@ -111,3 +111,41 @@ let buildings = {
 		directions: 8,
 	},
 };
+
+let heroes = {
+	list: {
+		"leonid": {
+			iname: "Леонид",
+			description: "Король людей, король Зверей!",
+			name: "leonid",
+			src: "images/hero.png",
+			hitPoints: 500,
+			width: 16,
+			height: 24,
+			gridWidth: 1,
+			gridHeight: 1.5,
+			damage: [20, 25],
+			defense: 4,
+			radiuse: 10,
+			speed: 2.5,
+			sight: 5,
+			level: 1,
+			maxLevel: 10,
+			experiense: 0,
+			maxExperiense: 5400,
+			cost: {"gold": 165},
+			frames: [],
+		},
+	},
+	defaults: {
+		type: "hero",
+		animationIndex: 0,
+		direction: 0,
+		move: {},
+		action: "stand",
+		repulsionSpeed: 2,
+		selected: false,
+		selectable: true,
+		directions: 8,
+	},
+};

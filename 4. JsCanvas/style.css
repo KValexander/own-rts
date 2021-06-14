@@ -150,6 +150,7 @@ div#gamecontainer div#loadscreen div.buttons {
 
 div#gamecontainer div#interfacetop {
 	height: 3%;
+	overflow: hidden;
 	background-color: #6e909d;
 	border-bottom: solid 2px #c2b9b0;
 }
@@ -162,6 +163,24 @@ div#gamecontainer div#interfacetop input{
 	height: 100%;
 	font-size: 12pt;
 	border: solid 1px #c2b9b0;
+}
+
+div#gamecontainer div#interfacetop div.right{
+	float: right;
+	width: 40%;
+	height: 100%;
+	color: white;
+	overflow: hidden;
+}
+
+div#gamecontainer div#interfacetop div.right div{
+	display: inline-block;
+	border: solid 3px #c2b9b0;
+	background-color: black;
+	border-bottom: none;
+	width: 20%;
+	height: 100%;
+	padding: 2px;
 }
 
 div#gamecontainer canvas {
@@ -262,9 +281,9 @@ div#gamecontainer div#interfacebottom div#selecteditems div.selected {
 }
 
 div#gamecontainer div#interfacebottom div#selecteditems div img {
+	height: 100%;
 	width: 100%;
 	object-fit: scale-down;
-	height: 100%;
 }
 
 div#gamecontainer div#interfacebottom div#unititems {

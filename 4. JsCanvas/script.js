@@ -57,6 +57,7 @@ let game = {
 	// Load game data, assets, triggers, ect
 	loading: function(data, callback) {
 		game.resetData();
+		game.cashMethod();
 		game.mouseMethod();
 		game.keysMethod();
 
@@ -81,6 +82,7 @@ let game = {
 		game.camera = {};
 		game.mouse = {};
 		game.grid = {};
+		game.cash = {};
 		game.map = {};
 		game.key = {};
 	},
@@ -88,6 +90,16 @@ let game = {
 	// Map method
 	mapMethod: function() {
 		game.map = {};
+	},
+
+	// Cash method
+	cashMethod: function() {
+		game.cash = {
+			gold: 1000,
+			tree: 800,
+			metal: 500,
+			food: 10,
+		};
 	},
 
 	// Camera method
@@ -189,6 +201,7 @@ let game = {
 		switch(game.mouse.e.which) {
 			// Left mouse button
 			case 1:
+				// Add item building
 				if(game.placementBuild.state) {
 					game.addItem(
 						game.placementBuild.type,
@@ -200,6 +213,8 @@ let game = {
 					);
 					game.clearPickBuild();
 				}
+				// Selection Actions
+				if(game.key.down == "ShiftLeft") game.selectionActions(game.mouse.e.offsetX, game.mouse.e.offsetY);
 			break;
 			// Middle mouse button
 			case 2:
@@ -219,6 +234,7 @@ let game = {
 
 	// Select personally item from selected items in #selectitems
 	selectPersonallyItem: function(id) {
+		if(game.key.down == "ShiftLeft") return game.removeFromSelection(id);
 		let item = game.getItemById(id);
 		game.personallySelect(item);
 		screen.setSelectedItems(game.personallySelected.id, game.selectedItems);
@@ -271,8 +287,9 @@ let game = {
 	mouseHolding: function() {
 		// Draggable, if the left mouse button is pressed and left shift
 		if(game.mouse.e.which == 1 && game.key.down == "ShiftLeft") {
-			game.personallySelected.x = game.mouse.coord.x - game.personallySelected.width / 2;
-			game.personallySelected.y = game.mouse.coord.y - game.personallySelected.height / 2;
+			game.mouse.stateHightlightLine = true;
+			// game.personallySelected.x = game.mouse.coord.x - game.personallySelected.width / 2;
+			// game.personallySelected.y = game.mouse.coord.y - game.personallySelected.height / 2;
 		}
 		else if(game.mouse.e.which == 2 && game.key.down == "ShiftLeft") {
 			game.addItem("unit", "worker", game.mouse.coord.x, game.mouse.coord.y, "red", "red");
@@ -323,12 +340,24 @@ let game = {
 
 	// Select many items in highlight line
 	selectHightlightLine: function() {
-		game.clearSelection();
-		// Enumeration and add
-		for(let i = 0; i < game.items.length; i++) {
-			if(game.selectCollision(game.highlightLine, game.items[i])) {
-				game.items[i].selected = true;
-				game.selectedItems.push(game.items[i]);
+		// Additional addition
+		if(game.key.down == "ShiftLeft") {
+			game.items.forEach((item) => {
+				if(item.selected == true) return;
+				if(game.selectCollision(game.highlightLine, item)) {
+					item.selected = true;
+					game.selectedItems.push(item);
+				}
+			});
+		// Regular addition
+		} else {
+			game.clearSelection();
+			// Enumeration and add
+			for(let i = 0; i < game.items.length; i++) {
+				if(game.selectCollision(game.highlightLine, game.items[i])) {
+					game.items[i].selected = true;
+					game.selectedItems.push(game.items[i]);
+				}
 			}
 		}
 
@@ -351,6 +380,44 @@ let game = {
 		screen.setSelectedItems(game.personallySelected.id, game.selectedItems);
 	},
 
+	// Selection actions, need to optimize, finalize
+	selectionActions(x, y) {
+		game.items.forEach((item, i) => {
+			if(game.mouseCollision(item, x, y)) {
+				if(item.selected) {
+					if(game.personallySelected.id == item.id) {
+						game.personallySelected = {};
+						screen.clearInformation();
+					}
+					item.selected = false;
+					game.selectedItems.splice(i, 1);
+					screen.setSelectedItems(game.personallySelected.id, game.selectedItems);
+				} else {
+					item.selected = true;
+					game.selectedItems.push(item);
+					game.personallySelected = item;
+					screen.setInformation(game.personallySelected);
+					screen.setSelectedItems(game.personallySelected.id, game.selectedItems);
+				}
+			}
+		});
+	},
+
+	// Remove for selected
+	removeFromSelection(id) {
+		game.selectedItems.forEach((it, i) => {
+			if(it.id == id) {
+				if(game.personallySelected.id == it.id) {
+					game.personallySelected = {};
+					screen.clearInformation();
+				}
+				it.selected = false;
+				game.selectedItems.splice(i, 1);
+				screen.setSelectedItems(game.personallySelected.id, game.selectedItems);
+			}
+		});
+	},
+
 	// Personally select
 	personallySelect(item) {
 		screen.clearActItem();
@@ -363,7 +430,7 @@ let game = {
 
 	// Movement items
 	itemMove: function(item, x, y) {
-		if(item.type != "unit") return;
+		if(item.type == "building") return;
 
 		if(game.mouseCollision(item, x, y))
 			return game.itemMoveStop();
@@ -384,6 +451,9 @@ let game = {
 
 		// Hold the mouse
 		game.mouseHolding();
+
+		// Set information about cash
+		screen.setCash(game.cash);
 
 		// Set information personally selected item
 		screen.setInformation(game.personallySelected);
@@ -520,6 +590,22 @@ let game = {
 		// Writing template data to a new object
 		let item = {};
 		for (let key in temp) item[key] = temp[key];
+
+		// Cost calculation
+		if(game.cash.gold < item.cost.gold) return console.log("Недостаточно ресурсов");
+		else game.cash.gold -= item.cost.gold;
+		if("tree" in item.cost) {
+			if(game.cash.tree < item.cost.tree) return console.log("Недостаточно ресурсов");
+			else game.cash.tree -= item.cost.tree;
+		}
+		if("metal" in item.cost) {
+			if(game.cash.metal < item.cost.metal) return console.log("Недостаточно ресурсов");
+			else game.cash.metal -= item.cost.metal;
+		}
+		if("food" in item.cost) {
+			if(game.cash.food < item.cost.foor) return console.log("Недостаточно ресурсов");
+			else game.cash.food -= item.cost.food;
+		}
 			
 		// Adding properties
 		item.id = game.counter++;
@@ -557,8 +643,10 @@ let game = {
 
 		// Remove from selected items array
 		game.selectedItems.forEach((it, i) => {
-			if(it.id == item.id)
+			if(it.id == item.id) {
+				it.selected = false;
 				game.selectedItems.splice(i, 1);
+			}
 		});
 		screen.setSelectedItems(game.personallySelected.id, game.selectedItems);
 
@@ -573,8 +661,6 @@ let game = {
 
 	// Remove items
 	removeItems(item) {
-		// game.items.find((it, i) => game.items.splice(i, 1));
-
 		// Remove from items array
 		for(let i = 0; i < game.items.length; i++) {
 			if(game.items[i].id == item.id) {

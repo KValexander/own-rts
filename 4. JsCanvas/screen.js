@@ -90,8 +90,9 @@ let screen = {
 				let color = "";
 				switch(item.name) {
 					case "capitol": // капитолий
-						$("td#a11").html(`<img src='images/worker.png' onclick='game.addItem("unit", "worker", ${item.x + item.width / 2}, ${item.y + item.height + 10}, "${item.faction}", "${item.faction}")' />`);
-						$("td#a12").html(`<img src='images/soldier.png' onclick='game.addItem("unit", "soldier", ${item.x + item.width / 2}, ${item.y + item.height + 10}, "${item.faction}", "${item.faction}")' />`);
+						$("td#a11").html(`<img src='images/worker.png' onclick='game.addItem("unit", "worker", ${item.x + item.width / 2}, ${item.y + item.height + 16}, "${item.faction}", "${item.faction}")' />`);
+						$("td#a12").html(`<img src='images/soldier.png' onclick='game.addItem("unit", "soldier", ${item.x + item.width / 2}, ${item.y + item.height + 16}, "${item.faction}", "${item.faction}")' />`);
+						$("td#a13").html(`<img src='images/hero.png' onclick='game.addItem("hero", "leonid", ${item.x + item.width / 2}, ${item.y + item.height + 16}, "${item.faction}", "${item.faction}")' />`);
 					break;
 				}
 			break;
@@ -115,6 +116,13 @@ let screen = {
 			out += `<div ${cl} onclick="game.selectPersonallyItem(${items[i].id})" ondblclick="game.selectItem(${items[i].id})"><img src="${ items[i].src }"></div>`;
 		}
 		$("#selecteditems").html(out);
+	},
+	// Вывод информации о ресурсах
+	setCash: function(cash) {
+		$("#gold").html(cash.gold);
+		$("#tree").html(cash.tree);
+		$("#metal").html(cash.metal);
+		$("#food").html(cash.food);
 	},
 	// Очистка информации о выбранной единице
 	clearInformation: function() {
@@ -178,7 +186,7 @@ $(function() {
 		$("#popupplay").html("На данный момент недоступно").show();
 
 		if($(this).is("#a11")) $("#popupplay").html("Остановить юнита, S").show();
-		if($(this).is("#a31")) $("#popupplay").html("Построить здание").show();
+		if($(this).is("#a31")) $("#popupplay").html("Построить здание, B").show();
 
 	}, function() {
 		$("#popupplay").hide().html("");
