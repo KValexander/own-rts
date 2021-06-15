@@ -208,13 +208,14 @@ let game = {
 					game.addItem(
 						game.placementBuild.type,
 						game.placementBuild.name,
-						game.mouse.coord.x,
-						game.mouse.coord.y,
+						game.gridSize(game.mouse.coord.x, "x"),
+						game.gridSize(game.mouse.coord.y, "y"),
 						game.placementBuild.faction,
 						game.placementBuild.faction,
 					);
 					game.clearPickBuild();
 				}
+
 				// Selection Actions
 				if(game.key.down == "ShiftLeft") game.selectionActions(game.mouse.e.offsetX, game.mouse.e.offsetY);
 			break;
@@ -229,10 +230,10 @@ let game = {
 			case 3:
 				if(game.placementBuild.state) game.clearPickBuild();
 				else game.selectedItems.forEach((item) => item.move = {x: game.mouse.e.offsetX - 8, y: game.mouse.e.offsetY - 8});
-				game.items.forEach(item => {
-					if(game.mouseCollision(item, game.mouse.e.offsetX, game.mouse.e.offsetY)) game.itemSetTarget(item.id);
-					else { if(item.selected) { item.move = {x: game.mouse.e.offsetX - 8, y: game.mouse.e.offsetY - 8}; item.target = null; } };
-				});
+				// game.items.forEach(item => {
+				// 	if(game.mouseCollision(item, game.mouse.e.offsetX, game.mouse.e.offsetY)) game.itemSetTarget(item.id);
+				// 	else { if(item.selected) { item.move = {x: game.mouse.e.offsetX - 8, y: game.mouse.e.offsetY - 8}; item.target = null; } };
+				// });
 				if(game.key.down == "AltLeft") game.addMisc("resources","metalcore", game.mouse.coord.x, game.mouse.coord.y);
 			break;
 			default: break;
@@ -363,6 +364,11 @@ let game = {
 				}
 			}
 		}
+		// Set information about misc
+		game.miscs.forEach((misc) => {
+			if(game.mouseCollision(misc, game.mouse.e.offsetX, game.mouse.e.offsetY))
+				screen.setInformationMisc(misc);
+		});
 
 		// Filtration, improve
 		let unitAvailability = false;
@@ -432,12 +438,14 @@ let game = {
 	},
 
 	// Movement items
-	itemMove: function(item, x, y) {
+	itemMove: function(item) {
 		if(item.type == "building") return;
-		item.action = "run";
+		// item.action = "run";
 
-		if(game.mouseCollision(item, x, y))
+		if(game.mouseCollision(item, item.move.x, item.move.y)) {
+			// item.action = "stand";
 			return item.move = {};
+		}
 
 		if(item.x < item.move.x) item.x += item.speed;
 		if(item.x > item.move.x) item.x -= item.speed;
@@ -455,6 +463,9 @@ let game = {
 	itemMoveTarget(item) {
 		if(item.target == null) return;
 		let it = game.getItemById(item.target);
+		if(it == undefined) return item.target = null;
+		if(game.moveCollision(item, it))
+			return item.target = null;
 		item.move.x = it.x;
 		item.move.y = it.y;
 	},
@@ -464,9 +475,18 @@ let game = {
 		game.selectedItems.forEach((it) => { it.move = {}; it.target = null; it.action = "stand"; });
 	},
 
+	// Handling move collision
+	moveCollision(item, it) {
+		if(item.x <= (it.x + it.width)
+			&& (item.x + item.width) >= it.x
+			&& item.y <= (it.y + it.height)
+			&& (item.y + item.height) >= it.y)
+			return true;
+		else return false;
+	},
+
 	// Update game data
 	update: function() {
-
 		// Hold the mouse
 		game.mouseHolding();
 
@@ -485,6 +505,9 @@ let game = {
 			for(let j = 0; j < game.items.length; j++) {
 				game.itemsCollision(game.items[i], game.items[j]);
 
+				// Behavior of items when attacked
+				game.attackOnEnemy(game.items[i], game.items[j]);
+
 				// Handling collision items and Misc
 				for (let j = 0; j < game.miscs.length; j++) 
 					game.miscCollision(game.items[i], game.miscs[j]);
@@ -493,23 +516,21 @@ let game = {
 			// Movement items
 			game.itemMove(game.items[i]);
 			// Movement target items, unfinished
-			// game.itemMoveTarget(game.items[i]);
-		}
-
-		// Handling data selected items
-		for(let i = 0; i < game.selectedItems.length; i++) {
-			let item = game.selectedItems[i];
-			
-			// Handling a collision with the edges of the map
-			game.edgesCollision(item);
-
-			// Handling selected collision items, eats a lot of RAM, not optimized
-			for(let j = 0; j < game.selectedItems.length; j++)
-				game.itemsCollision(game.selectedItems[i], game.selectedItems[j]);
+			game.itemMoveTarget(game.items[i]);
 		}
 
 		// Select many items in highlight line
 		if(game.mouse.stateHightlightLine) game.selectHightlightLine();
+	},
+
+	// Behavior of items when attacked
+	attackOnEnemy: function(item, it) {
+		if(item.type == "building") return;
+		if(item.faction == it.faction) return;
+		if(item.x - item.sight <= (it.x + it.width) && it.x - item.sight <= (item.x + item.width)
+			&& item.y - item.sight <= (it.y + it.height) && it.y - item.sight <= (item.y + item.height)){
+			item.target = it.id;
+		}
 	},
 
 	// Handling a collision with the edges of the map
@@ -538,9 +559,12 @@ let game = {
 			// Damage
 			if(item1.faction != item2.faction) {
 				if(item1.type == "building") return;
-				let damage = (Math.floor(Math.random() * (item1.damage[1] - item1.damage[0])) + item1.damage[0]) - item2.defense;
-				if(damage <= 0) damage = 0;
-				item2.hitPoints -= damage;
+				let damage1 = (Math.floor(Math.random() * (item1.damage[1] - item1.damage[0])) + item1.damage[0]) - item2.defense;
+				let damage2 = (Math.floor(Math.random() * (item2.damage[1] - item2.damage[0])) + item2.damage[0]) - item1.defense;
+				if(damage1 <= 0) damage1 = 0;
+				if(damage2 <= 0) damage2 = 0;
+				item2.hitPoints -= damage1;
+				item1.hitPoints -= damage2;
 				if(d.x >= 0) item1.x += 10;
 				if(d.x <= 0) item1.x -= 10;
 				if(d.y >= 0) item1.y += 10;
@@ -702,8 +726,8 @@ let game = {
 
 	// Placing the building on the map
 	placeBuild: function(x, y) {
-		x = x - game.placementBuild.width / 2;
-		y = y - game.placementBuild.height / 2;
+		x = game.gridSize(x, "x");
+		y = game.gridSize(y, "y");
 		game.context.drawImage(game.loadImage(game.placementBuild.src), x, y, game.placementBuild.width, game.placementBuild.height);
 	},
 
@@ -731,7 +755,11 @@ let game = {
 		// Writing template data to a new object
 		let item = {};
 		for (let key in temp) item[key] = temp[key];
-		item.target = null;
+		
+		// Cleaning up what I haven't done yet
+		if(type != "building") {
+			item.target = null; item.move = {};
+		}
 
 		// Cost calculation
 		if(game.cash.gold < item.cost.gold) return setNotification("Недостаточно ресурсов");
@@ -751,8 +779,8 @@ let game = {
 			
 		// Adding properties
 		item.id = game.counter++;
-		item.x = x - item.width / 2;
-		item.y = y - item.height / 2;
+		item.x = x;
+		item.y = y;
 		item.faction = faction;
 		item.life = item.hitPoints;
 
@@ -799,7 +827,6 @@ let game = {
 				game.items.splice(i, 1); return;
 			}
 		}
-
 	},
 
 	// Remove items
@@ -851,6 +878,13 @@ let game = {
 		// Draw grid
 		game.context.strokeStyle = game.grid.color;
 		game.context.stroke();
+	},
+
+	// Resizing to a grid
+	gridSize: function(n, t) {
+		if(t == "x") n = Math.floor(n / game.grid.lineX) * game.grid.lineX;
+		if(t == "y") n = Math.floor(n / game.grid.lineY) * game.grid.lineY;
+		return n;
 	},
 	
 	// Draw map method

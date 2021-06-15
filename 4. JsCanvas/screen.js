@@ -80,9 +80,13 @@ let screen = {
 		`);
 	},
 	// Вывод информации о Разном
-	setInformationMisc: function(misk) {
+	setInformationMisc: function(misc) {
 		screen.clearInformation();
-		
+		$("#portrait").css("background-image", "url('"+ misc.src +"')");
+		$("#selectedinformation").html(`
+			<h2>${misc.iname}</h2>
+			<p>Ресурс: ${misc.minerals}</p>
+		`);
 	},
 	// Вывод действий в панель действий
 	setActItem: function(item) {
