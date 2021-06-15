@@ -1,3 +1,4 @@
+// Items
 let units = {
 	list: {
 		"worker": {
@@ -54,6 +55,7 @@ let units = {
 		animationIndex: 0,
 		direction: 0,
 		move: {},
+		target: null,
 		action: "stand",
 		repulsionSpeed: 2,
 		selected: false,
@@ -62,6 +64,7 @@ let units = {
 	},
 };
 
+// Items
 let buildings = {
 	list: {
 		"capitol": {
@@ -112,6 +115,7 @@ let buildings = {
 	},
 };
 
+// Items
 let heroes = {
 	list: {
 		"leonid": {
@@ -150,6 +154,7 @@ let heroes = {
 	},
 };
 
+// Miscs
 let resources = {
 	list: {
 		"tree": {

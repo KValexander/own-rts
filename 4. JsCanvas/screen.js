@@ -52,6 +52,7 @@ let screen = {
 
 	// Применение изменений размера экрана
 	changeResolution: function() {
+		screen.clearInformation();
 		// Если размеры слишком велики
 		if(screen.width > window.innerWidth) screen.width = window.innerWidth;
 		if(screen.height > window.innerHeight) screen.height = window.innerHeight;
@@ -64,8 +65,8 @@ let screen = {
 			$("#gamecontainer").css("top", window.innerHeight / 2 - screen.height / 2 + "px");
 	},
 	// Вывод информации выбранной единицы
-	setInformation: function(item) {
-		if(Object.keys(item).length == 0) return
+	setInformationItem: function(item) {
+		if(Object.keys(item).length == 0) return;
 		$("#portrait").css("background-image", "url('" + item.src + "')");
 		$("#lifebar").html(item.hitPoints + " / " + item.life);
 		if(item.hitPoints >= 100) $("#lifebar").css("color", "green");
@@ -77,6 +78,11 @@ let screen = {
 			<p>Атака: ${item.damage[0]} - ${item.damage[1]}</p>
 			<p>Защита: ${item.defense}</p>
 		`);
+	},
+	// Вывод информации о Разном
+	setInformationMisc: function(misk) {
+		screen.clearInformation();
+		
 	},
 	// Вывод действий в панель действий
 	setActItem: function(item) {

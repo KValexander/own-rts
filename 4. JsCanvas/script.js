@@ -71,8 +71,9 @@ let game = {
 		game.counter = 1;
 
 		// Game data Arrays
+		game.miscs = [];
 		game.items = [];
-		game.resources = [];
+		game.textures = [];
 		game.sortedItems = [];
 		game.selectedItems = [];
 		
@@ -219,7 +220,7 @@ let game = {
 			break;
 			// Middle mouse button
 			case 2:
-				if(game.key.down == "AltLeft") game.addResources("goldmine", game.mouse.coord.x, game.mouse.coord.y);
+				if(game.key.down == "AltLeft") game.addMisc("resources", "goldmine", game.mouse.coord.x, game.mouse.coord.y);
 				// if(game.key.down == "AltLeft") game.addItem("building", "capitol", game.mouse.coord.x, game.mouse.coord.y, "neutral");
 				if(game.key.down == "ShiftLeft") game.addItem("unit", "worker", game.mouse.coord.x, game.mouse.coord.y, "red", "red");
 				if(game.key.down == "ControlLeft") game.addItem("unit", "worker", game.mouse.coord.x, game.mouse.coord.y, "blue", "blue");
@@ -228,7 +229,11 @@ let game = {
 			case 3:
 				if(game.placementBuild.state) game.clearPickBuild();
 				else game.selectedItems.forEach((item) => item.move = {x: game.mouse.e.offsetX - 8, y: game.mouse.e.offsetY - 8});
-				if(game.key.down == "AltLeft") game.addResources("metalcore", game.mouse.coord.x, game.mouse.coord.y);
+				game.items.forEach(item => {
+					if(game.mouseCollision(item, game.mouse.e.offsetX, game.mouse.e.offsetY)) game.itemSetTarget(item.id);
+					else { if(item.selected) { item.move = {x: game.mouse.e.offsetX - 8, y: game.mouse.e.offsetY - 8}; item.target = null; } };
+				});
+				if(game.key.down == "AltLeft") game.addMisc("resources","metalcore", game.mouse.coord.x, game.mouse.coord.y);
 			break;
 			default: break;
 		};
@@ -288,14 +293,12 @@ let game = {
 
 	// Holding mouse event
 	mouseHolding: function() {
-		// Draggable, if the left mouse button is pressed and left shift
+		// State rendering hightlight line
 		if(game.mouse.e.which == 1 && game.key.down == "ShiftLeft") {
 			game.mouse.stateHightlightLine = true;
-			// game.personallySelected.x = game.mouse.coord.x - game.personallySelected.width / 2;
-			// game.personallySelected.y = game.mouse.coord.y - game.personallySelected.height / 2;
 		}
 		else if(game.mouse.e.which == 1 && game.key.down == "AltLeft") {
-			game.addResources("tree", game.mouse.coord.x, game.mouse.coord.y);
+			game.addMisc("resources", "tree", game.mouse.coord.x, game.mouse.coord.y);
 		}
 		// State rendering hightlight line
 		else if(game.mouse.e.which == 1) {
@@ -396,7 +399,7 @@ let game = {
 					item.selected = true;
 					game.selectedItems.push(item);
 					game.personallySelected = item;
-					screen.setInformation(game.personallySelected);
+					screen.setInformationItem(game.personallySelected);
 					screen.setSelectedItems(game.personallySelected.id, game.selectedItems);
 				}
 			}
@@ -424,13 +427,14 @@ let game = {
 
 		game.personallySelected = item;
 
-		screen.setInformation(game.personallySelected);
+		screen.setInformationItem(game.personallySelected);
 		screen.setActItem(game.personallySelected);
 	},
 
 	// Movement items
 	itemMove: function(item, x, y) {
 		if(item.type == "building") return;
+		item.action = "run";
 
 		if(game.mouseCollision(item, x, y))
 			return item.move = {};
@@ -440,10 +444,24 @@ let game = {
 		if(item.y < item.move.y) item.y += item.speed;
 		if(item.y > item.move.y) item.y -= item.speed;
 	},
+	
+	// Significantly modify target system
+	// Set following targer for item
+	itemSetTarget(id) {
+		game.selectedItems.forEach((item) => item.target = id);
+	},
+
+	// Movement items by target
+	itemMoveTarget(item) {
+		if(item.target == null) return;
+		let it = game.getItemById(item.target);
+		item.move.x = it.x;
+		item.move.y = it.y;
+	},
 
 	// Stop motion item
-	itemMoveStop: function(id) {
-		game.selectedItems.forEach((it) => it.move = {});
+	itemMoveStop: function() {
+		game.selectedItems.forEach((it) => { it.move = {}; it.target = null; it.action = "stand"; });
 	},
 
 	// Update game data
@@ -456,28 +474,34 @@ let game = {
 		screen.setCash(game.cash);
 
 		// Set information personally selected item
-		screen.setInformation(game.personallySelected);
+		screen.setInformationItem(game.personallySelected);
 
 		// Handling data items
 		for(let i = 0; i < game.items.length; i++) {
+			// Handling a collision with the edges of the map
+			game.edgesCollision(game.items[i]);
+
 			// Handling collision items
 			for(let j = 0; j < game.items.length; j++) {
 				game.itemsCollision(game.items[i], game.items[j]);
 
-				// Handling collision items and resources
-				for (let j = 0; j < game.resources.length; j++) {
-					game.resourcesCollision(game.items[i], game.resources[j]);
-				}
+				// Handling collision items and Misc
+				for (let j = 0; j < game.miscs.length; j++) 
+					game.miscCollision(game.items[i], game.miscs[j]);
 			}
 
 			// Movement items
 			game.itemMove(game.items[i]);
+			// Movement target items, unfinished
+			// game.itemMoveTarget(game.items[i]);
 		}
 
 		// Handling data selected items
 		for(let i = 0; i < game.selectedItems.length; i++) {
 			let item = game.selectedItems[i];
-			// Movement selected items
+			
+			// Handling a collision with the edges of the map
+			game.edgesCollision(item);
 
 			// Handling selected collision items, eats a lot of RAM, not optimized
 			for(let j = 0; j < game.selectedItems.length; j++)
@@ -486,6 +510,14 @@ let game = {
 
 		// Select many items in highlight line
 		if(game.mouse.stateHightlightLine) game.selectHightlightLine();
+	},
+
+	// Handling a collision with the edges of the map
+	edgesCollision: function(el) {
+		if(el.x <= 0) el.x += el.repulsionSpeed;
+		if((el.x + el.width) >= game.canvas.width) el.x -= el.repulsionSpeed;
+		if(el.y <= 0) el.y += el.repulsionSpeed;
+		if((el.y + el.height) >= game.canvas.height) el.y -= el.repulsionSpeed;
 	},
 
 	// Check/Handling items collision
@@ -503,9 +535,6 @@ let game = {
 			if(d.y >= 0) item1.y += item1.repulsionSpeed;
 			if(d.y <= 0) item1.y -= item1.repulsionSpeed;
 
-			// if(item1.x == item1.x) item1.y += item1.repulsionSpeed;
-			// if(item1.y == item1.y) item1.x += item1.repulsionSpeed;
-
 			// Damage
 			if(item1.faction != item2.faction) {
 				if(item1.type == "building") return;
@@ -520,8 +549,8 @@ let game = {
 		}
 	},
 
-	// Resources collision
-	resourcesCollision: function(item, res) {
+	// Misc collision
+	miscCollision: function(item, res) {
 		if(	item.x <= (res.x + res.width)
 			&& res.x <= (item.x + item.width)
 			&& item.y <= (res.y + res.height)
@@ -573,7 +602,7 @@ let game = {
 		game.context.fillRect(0, 0, screen.canvasWidth, screen.canvasHeight);
 
 		// Rendering map, minus RAM
-		// game.drawMap();
+		game.drawMap();
 
 		// Rendering grid
 		game.drawGrid();
@@ -581,11 +610,20 @@ let game = {
 		// Rendering item
 		game.items.forEach((item) => game.drawItem(item));
 
-		// Rendering resources
-		game.resources.forEach((res) => game.drawResources(res));
+		// Rendering misc
+		game.miscs.forEach((misc) => game.drawMisc(misc));
 
 		// Rendering selection for selected items
 		game.selectedItems.forEach((item) => game.drawSelection(item));
+
+		// Highlighting the hovering misc
+		game.miscs.forEach((misc) => {
+			if(game.mouseCollision(misc, game.mouse.coord.x, game.mouse.coord.y)) {
+				game.context.strokeStyle = "white";
+				game.context.lineWidth = 2;
+				game.context.strokeRect(misc.x, misc.y, misc.width, misc.height);
+			}
+		});
 
 		// Highlighting the hovering item
 		game.items.forEach((item) => {
@@ -602,11 +640,12 @@ let game = {
 		// Rendering placing pick building
 		if(game.placementBuild.state) game.placeBuild(game.mouse.coord.x, game.mouse.coord.y);
 
+		// Rendering fog
+		game.drawFog();
+
 		// Rendering highlight line for select many items
 		if(game.mouse.stateHightlightLine) game.drawHighlightLine();
 
-		// Rendering fog
-		game.drawFog();
 	},
 
 	// Load image
@@ -616,30 +655,35 @@ let game = {
 		return image;
 	},
 
-	// Add resources
-	addResources: function(name, x, y) {
+	// Add misc
+	addMisc: function(type, name, x, y) {
 		let temp = {};
-		temp = resources.list[name];
-		Object.assign(temp, resources.defaults);
 
-		let res = {};
-		for(let key in temp) res[key] = temp[key];
+		switch(type){
+			case "resources":
+				temp = resources.list[name];
+				Object.assign(temp, resources.defaults);
+			break;
+		}
 
-		res.x = x - res.width / 2;
-		res.y = y - res.height / 2;
-		game.resources.push(res);
+		let misc = {};
+		for(let key in temp) misc[key] = temp[key];
+
+		misc.x = x - misc.width / 2;
+		misc.y = y - misc.height / 2;
+		game.miscs.push(misc);
 	},
 
-	// Draw resources
-	drawResources: function(res) {
-		if(res.minerals <= 0) game.removeResources();
-		game.context.drawImage(game.loadImage(res.src), res.x, res.y, res.width, res.height);
+	// Draw misc
+	drawMisc: function(misc) {
+		if(misc.minerals <= 0) game.removeMisc();
+		game.context.drawImage(game.loadImage(misc.src), misc.x, misc.y, misc.width, misc.height);
 	},
 
-	// Remove resources
-	removeResources: function() {
-		game.resources.forEach((res, i) => {
-			if(res.minerals <= 0) game.resources.splice(i, 1);
+	// Remove misc
+	removeMisc: function() {
+		game.miscs.forEach((misc, i) => {
+			if(misc.minerals <= 0) game.miscs.splice(i, 1);
 		});
 	},
 
@@ -687,6 +731,7 @@ let game = {
 		// Writing template data to a new object
 		let item = {};
 		for (let key in temp) item[key] = temp[key];
+		item.target = null;
 
 		// Cost calculation
 		if(game.cash.gold < item.cost.gold) return setNotification("Недостаточно ресурсов");
@@ -736,6 +781,7 @@ let game = {
 		if(item.id == game.personallySelected.id) {
 			game.personallySelected = {};
 			screen.clearInformation();
+			screen.clearActItem();
 		}
 
 		// Remove from selected items array
