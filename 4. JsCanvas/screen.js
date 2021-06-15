@@ -83,16 +83,16 @@ let screen = {
 		switch(item.type) {
 			case "unit": // если юнит
 				if(item.name == "worker")
-					$("td#a31").html(`<img id="build" src='gui/build.png' onclick='screen.setBuildActItem("${item.faction}")'></img>`);
-				$("td#a11").html(`<img id="stop" src='gui/stop.png' onclick='game.itemMoveStop()'></img>`);
+					$("td#a31").html(`<img id="build" src='gui/build.png' onclick='screen.setBuildActItem("${item.faction}")'></img>`).addClass("aBuild");
+				$("td#a11").html(`<img id="stop" src='gui/stop.png' onclick='game.itemMoveStop()'></img>`).addClass("aStop");
 			break;
 			case "building": // если здание
 				let color = "";
 				switch(item.name) {
 					case "capitol": // капитолий
-						$("td#a11").html(`<img src='images/worker.png' onclick='game.addItem("unit", "worker", ${item.x + item.width / 2}, ${item.y + item.height + 16}, "${item.faction}", "${item.faction}")' />`);
-						$("td#a12").html(`<img src='images/soldier.png' onclick='game.addItem("unit", "soldier", ${item.x + item.width / 2}, ${item.y + item.height + 16}, "${item.faction}", "${item.faction}")' />`);
-						$("td#a13").html(`<img src='images/hero.png' onclick='game.addItem("hero", "leonid", ${item.x + item.width / 2}, ${item.y + item.height + 16}, "${item.faction}", "${item.faction}")' />`);
+						$("td#a11").html(`<img src='images/worker.png' onclick='game.addItem("unit", "worker", ${item.x + item.width / 2}, ${item.y + item.height + 16}, "${item.faction}", "${item.faction}")' />`).addClass("aWorker");
+						$("td#a12").html(`<img src='images/soldier.png' onclick='game.addItem("unit", "soldier", ${item.x + item.width / 2}, ${item.y + item.height + 16}, "${item.faction}", "${item.faction}")' />`).addClass("aSoldier");
+						$("td#a13").html(`<img src='images/hero.png' onclick='game.addItem("hero", "leonid", ${item.x + item.width / 2}, ${item.y + item.height + 16}, "${item.faction}", "${item.faction}")' />`).addClass("aHero");
 					break;
 				}
 			break;
@@ -104,8 +104,8 @@ let screen = {
 	// Вывод возможных построек в панель действий
 	setBuildActItem: function(faction) {
 		screen.clearActItem();
-		$("td#a11").html(`<img src='images/capitol.png' onclick="game.pickBuild('capitol', '${faction}')">`);
-		$("td#a12").html(`<img src='images/temple.png' onclick="game.pickBuild('temple', '${faction}')">`);
+		$("td#a11").html(`<img src='images/capitol.png' onclick="game.pickBuild('capitol', '${faction}')">`).addClass("aCapitol");
+		$("td#a12").html(`<img src='images/temple.png' onclick="game.pickBuild('temple', '${faction}')">`).addClass("aTemple");
 	},
 	// Вывод выделенных юнитов на панельный блок
 	setSelectedItems: function(id, items) {
@@ -134,6 +134,7 @@ let screen = {
 	clearActItem: function() {
 		let clearCells = document.querySelectorAll("#actioncells table tr td");
 		for(let i = 0; i < clearCells.length; i++) clearCells[i].innerHTML = "";
+		$("td").removeClass();
 	},
 	// Очистка окна выделеннывх юнитов
 	clearSelectedItems: function() {
@@ -183,10 +184,20 @@ $(function() {
 $(function() {
 	// Hover на кнопки
 	$("td").hover(function() {
-		$("#popupplay").html("На данный момент недоступно").show();
+		// $("#popupplay").html("На данный момент недоступно").show();
 
-		if($(this).is("#a11")) $("#popupplay").html("Остановить юнита, S").show();
-		if($(this).is("#a31")) $("#popupplay").html("Построить здание, B").show();
+		// Здания
+		if($(this).is(".aCapitol")) $("#popupplay").html(buildings.list["capitol"].description + "<br> Стоимость: " + JSON.stringify(buildings.list["capitol"].cost)).show();
+		if($(this).is(".aTemple")) $("#popupplay").html(buildings.list["temple"].description + "<br> Стоимость: " + JSON.stringify(buildings.list["temple"].cost)).show();
+
+		// Юниты
+		if($(this).is(".aWorker")) $("#popupplay").html(units.list["worker"].description + "<br> Стоимость: " + JSON.stringify(units.list["worker"].cost)).show();
+		if($(this).is(".aSoldier")) $("#popupplay").html(units.list["soldier"].description + "<br> Стоимость: " + JSON.stringify(units.list["soldier"].cost)).show();
+		if($(this).is(".aHero")) $("#popupplay").html(heroes.list["leonid"].description + "<br> Стоимость: " + JSON.stringify(heroes.list["leonid"].cost)).show();
+
+		// Действия
+		if($(this).is(".aStop")) $("#popupplay").html("Остановить юнита, S").show();
+		if($(this).is(".aBuild")) $("#popupplay").html("Построить здание, B").show();
 
 	}, function() {
 		$("#popupplay").hide().html("");
@@ -194,3 +205,9 @@ $(function() {
 	// Hover на pop-up окно
 	$("#popupplay").hover(function() { $(this).show() }, function() { $(this).hide() });
 });
+
+// Вывод небольшого уведомления
+function setNotification(text) {
+	$("#popupplay").html(text).show();	
+	setTimeout(() => $("#popupplay").hide(), 1000);
+};

@@ -72,6 +72,7 @@ let game = {
 
 		// Game data Arrays
 		game.items = [];
+		game.resources = [];
 		game.sortedItems = [];
 		game.selectedItems = [];
 		
@@ -218,14 +219,16 @@ let game = {
 			break;
 			// Middle mouse button
 			case 2:
-				if(game.key.down == "AltLeft") {
-					game.addItem("building", "capitol", game.mouse.coord.x, game.mouse.coord.y, "neutral");
-				}
+				if(game.key.down == "AltLeft") game.addResources("goldmine", game.mouse.coord.x, game.mouse.coord.y);
+				// if(game.key.down == "AltLeft") game.addItem("building", "capitol", game.mouse.coord.x, game.mouse.coord.y, "neutral");
+				if(game.key.down == "ShiftLeft") game.addItem("unit", "worker", game.mouse.coord.x, game.mouse.coord.y, "red", "red");
+				if(game.key.down == "ControlLeft") game.addItem("unit", "worker", game.mouse.coord.x, game.mouse.coord.y, "blue", "blue");
 			break;
 			// Right mouse button
 			case 3:
 				if(game.placementBuild.state) game.clearPickBuild();
 				else game.selectedItems.forEach((item) => item.move = {x: game.mouse.e.offsetX - 8, y: game.mouse.e.offsetY - 8});
+				if(game.key.down == "AltLeft") game.addResources("metalcore", game.mouse.coord.x, game.mouse.coord.y);
 			break;
 			default: break;
 		};
@@ -291,11 +294,8 @@ let game = {
 			// game.personallySelected.x = game.mouse.coord.x - game.personallySelected.width / 2;
 			// game.personallySelected.y = game.mouse.coord.y - game.personallySelected.height / 2;
 		}
-		else if(game.mouse.e.which == 2 && game.key.down == "ShiftLeft") {
-			game.addItem("unit", "worker", game.mouse.coord.x, game.mouse.coord.y, "red", "red");
-		}
-		else if (game.mouse.e.which == 2 && game.key.down == "ControlLeft") {
-			game.addItem("unit", "worker", game.mouse.coord.x, game.mouse.coord.y, "blue", "blue");
+		else if(game.mouse.e.which == 1 && game.key.down == "AltLeft") {
+			game.addResources("tree", game.mouse.coord.x, game.mouse.coord.y);
 		}
 		// State rendering hightlight line
 		else if(game.mouse.e.which == 1) {
@@ -433,7 +433,7 @@ let game = {
 		if(item.type == "building") return;
 
 		if(game.mouseCollision(item, x, y))
-			return game.itemMoveStop();
+			return item.move = {};
 
 		if(item.x < item.move.x) item.x += item.speed;
 		if(item.x > item.move.x) item.x -= item.speed;
@@ -461,8 +461,14 @@ let game = {
 		// Handling data items
 		for(let i = 0; i < game.items.length; i++) {
 			// Handling collision items
-			for(let j = 0; j < game.items.length; j++)
+			for(let j = 0; j < game.items.length; j++) {
 				game.itemsCollision(game.items[i], game.items[j]);
+
+				// Handling collision items and resources
+				for (let j = 0; j < game.resources.length; j++) {
+					game.resourcesCollision(game.items[i], game.resources[j]);
+				}
+			}
 
 			// Movement items
 			game.itemMove(game.items[i]);
@@ -497,6 +503,9 @@ let game = {
 			if(d.y >= 0) item1.y += item1.repulsionSpeed;
 			if(d.y <= 0) item1.y -= item1.repulsionSpeed;
 
+			// if(item1.x == item1.x) item1.y += item1.repulsionSpeed;
+			// if(item1.y == item1.y) item1.x += item1.repulsionSpeed;
+
 			// Damage
 			if(item1.faction != item2.faction) {
 				if(item1.type == "building") return;
@@ -511,6 +520,49 @@ let game = {
 		}
 	},
 
+	// Resources collision
+	resourcesCollision: function(item, res) {
+		if(	item.x <= (res.x + res.width)
+			&& res.x <= (item.x + item.width)
+			&& item.y <= (res.y + res.height)
+			&& res.y <= (item.y + item.height))
+		{
+			let acenter = {x: item.x + item.width / 2, y: item.y + item.height / 2};
+			let bcenter = {x: res.x + res.width / 2, y: res.y + res.height / 2};
+			let d = {x: acenter.x - bcenter.x, y: acenter.y - bcenter.y};
+			if(d.x >= 0) {
+				item.x += item.repulsionSpeed;
+			}
+			if(d.x <= 0) {
+				item.x -= item.repulsionSpeed;
+			}
+			if(d.y >= 0) {
+				item.y += item.repulsionSpeed;
+			}
+			if(d.y <= 0) {
+				item.y -= item.repulsionSpeed;
+			}
+
+			// Mining
+			if(item.name == "worker" && res.mining && res.minerals > 0) {
+				switch(res.name) {
+					case "tree":
+						game.cash.tree += res.mining;
+						res.minerals -= res.mining;
+					break;
+					case "goldmine":
+						game.cash.gold += res.mining;
+						res.minerals -= res.mining;
+					break;
+					case "metalcore":
+						game.cash.metal += res.mining;
+						res.minerals -= res.mining;
+					break;
+				}
+			}
+		}
+	},
+
 	// Rendering game assets
 	rendering: function() {
 		// Background
@@ -521,7 +573,7 @@ let game = {
 		game.context.fillRect(0, 0, screen.canvasWidth, screen.canvasHeight);
 
 		// Rendering map, minus RAM
-		game.drawMap();
+		// game.drawMap();
 
 		// Rendering grid
 		game.drawGrid();
@@ -529,14 +581,32 @@ let game = {
 		// Rendering item
 		game.items.forEach((item) => game.drawItem(item));
 
+		// Rendering resources
+		game.resources.forEach((res) => game.drawResources(res));
+
 		// Rendering selection for selected items
 		game.selectedItems.forEach((item) => game.drawSelection(item));
+
+		// Highlighting the hovering item
+		game.items.forEach((item) => {
+			if(item.selected) return;
+			if(game.mouseCollision(item, game.mouse.coord.x, game.mouse.coord.y)) {
+				if(item.hitPoints >= 100) game.context.strokeStyle = "green";
+				if(item.hitPoints < 100 && item.hitPoints > 30) game.context.strokeStyle = "orange";
+				if(item.hitPoints <= 30) game.context.strokeStyle = "red";
+				game.context.lineWidth = 2;
+				game.context.strokeRect(item.x, item.y, item.width, item.height);
+			}
+		});
 
 		// Rendering placing pick building
 		if(game.placementBuild.state) game.placeBuild(game.mouse.coord.x, game.mouse.coord.y);
 
 		// Rendering highlight line for select many items
 		if(game.mouse.stateHightlightLine) game.drawHighlightLine();
+
+		// Rendering fog
+		game.drawFog();
 	},
 
 	// Load image
@@ -544,6 +614,33 @@ let game = {
 		let image = new Image();
 		image.src = src;
 		return image;
+	},
+
+	// Add resources
+	addResources: function(name, x, y) {
+		let temp = {};
+		temp = resources.list[name];
+		Object.assign(temp, resources.defaults);
+
+		let res = {};
+		for(let key in temp) res[key] = temp[key];
+
+		res.x = x - res.width / 2;
+		res.y = y - res.height / 2;
+		game.resources.push(res);
+	},
+
+	// Draw resources
+	drawResources: function(res) {
+		if(res.minerals <= 0) game.removeResources();
+		game.context.drawImage(game.loadImage(res.src), res.x, res.y, res.width, res.height);
+	},
+
+	// Remove resources
+	removeResources: function() {
+		game.resources.forEach((res, i) => {
+			if(res.minerals <= 0) game.resources.splice(i, 1);
+		});
 	},
 
 	// Pick a building to be placed on the map
@@ -592,18 +689,18 @@ let game = {
 		for (let key in temp) item[key] = temp[key];
 
 		// Cost calculation
-		if(game.cash.gold < item.cost.gold) return console.log("Недостаточно ресурсов");
+		if(game.cash.gold < item.cost.gold) return setNotification("Недостаточно ресурсов");
 		else game.cash.gold -= item.cost.gold;
 		if("tree" in item.cost) {
-			if(game.cash.tree < item.cost.tree) return console.log("Недостаточно ресурсов");
+			if(game.cash.tree < item.cost.tree) return setNotification("Недостаточно ресурсов");
 			else game.cash.tree -= item.cost.tree;
 		}
 		if("metal" in item.cost) {
-			if(game.cash.metal < item.cost.metal) return console.log("Недостаточно ресурсов");
+			if(game.cash.metal < item.cost.metal) return setNotification("Недостаточно ресурсов");
 			else game.cash.metal -= item.cost.metal;
 		}
 		if("food" in item.cost) {
-			if(game.cash.food < item.cost.foor) return console.log("Недостаточно ресурсов");
+			if(game.cash.food < item.cost.foor) return setNotification("Недостаточно ресурсов");
 			else game.cash.food -= item.cost.food;
 		}
 			
@@ -710,7 +807,7 @@ let game = {
 		game.context.stroke();
 	},
 	
-	// Draw map method, Minus RAM
+	// Draw map method
 	drawMap: function() {
 		game.context.fillStyle = "gray";
 		for(let i = 0; i < game.grid.collsX * game.grid.lineX; i += game.grid.lineX) {
@@ -719,6 +816,28 @@ let game = {
 					game.context.fillRect(i, j, game.grid.lineX, game.grid.lineY);
 			}
 		}
+	},
+
+	// Draw fog, not optimized
+	drawFog: function() {
+		for(let i = 0; i < game.grid.collsX * game.grid.lineX; i += game.grid.lineX) {
+			for(let j = 0; j < game.grid.collsY * game.grid.lineY; j += game.grid.lineY) {
+				game.context.fillStyle = "rgba(0,0,0,0.8)";
+				game.items.forEach((item) => {
+					if(game.fogCollision(item, i, j, game.grid.lineX, game.grid.lineY))
+						game.context.fillStyle = "rgba(0,0,0,0)";
+				});
+				game.context.fillRect(i, j, game.grid.lineX, game.grid.lineY);
+			}
+		}
+	},
+
+	// Handling fog collision
+	fogCollision: function(item, i, j, x, y) {
+		if(item.x - item.sight <= (i + x) && i - item.sight <= (item.x + item.width)
+			&& item.y - item.sight <= (j + y) && j - item.sight <= (item.y + item.height))
+			return true;
+		else return false;
 	},
 
 	// Game loop
