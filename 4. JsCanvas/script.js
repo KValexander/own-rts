@@ -251,8 +251,9 @@ let game = {
 				// Add item building
 				if(game.placementBuild.state) {
 					game.textures.forEach((texture) => {
-						if(game.mouseCollision(texture, x, y))
-							game.placementBuild.build = false;
+						if(game.mouseCollision(texture, x, y)){
+							if(!texture.walk) game.placementBuild.build = false;
+						}
 					});
 					if(game.placementBuild.build) {
 						game.addItem(
