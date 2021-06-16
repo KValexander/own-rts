@@ -56,10 +56,15 @@ let game = {
 
 	// Load game data, assets, triggers, ect
 	loading: function(data, callback) {
+		// Reset data and handling methods
 		game.resetData();
 		game.cashMethod();
+		game.gridMethod();
 		game.mouseMethod();
 		game.keysMethod();
+
+		// Adding textures
+		game.addTexture(game.grid.lineX * 6, 0, game.grid.collsX * game.grid.lineX - game.grid.lineX * 12, game.grid.lineY * 6, "#0076a3", false);
 
 		game.background = game.loadImage("gui/bg_game.jpg");
 		game.background.onload = () => callback(true);
@@ -87,6 +92,16 @@ let game = {
 		game.cash = {};
 		game.map = {};
 		game.key = {};
+	},
+
+	// Grid method
+	gridMethod: function() {
+		game.grid = {};
+		game.grid.color = "#fff";
+		game.grid.lineX = 16;
+		game.grid.lineY = 16;
+		game.grid.collsX = screen.canvasWidth / game.grid.lineX;
+		game.grid.collsY = screen.canvasHeight / game.grid.lineX;
 	},
 
 	// Map method
@@ -164,6 +179,7 @@ let game = {
 
 			// How do you work???
 			// Checking for id
+			// a very important line of code that I still don't fully understand
 			while(game.selectedItems.find(item => item.id == id) == undefined) id = id + 1;
 
 			game.selectPersonallyItem(id);
@@ -196,7 +212,7 @@ let game = {
 	},
 
 	// Mouse click events
-	mouseClick: async function() {
+	mouseClick: function() {
 		if(!game.mouse.click) return;
 
 		// Mouse click handling
@@ -622,6 +638,9 @@ let game = {
 		// Rendering map, minus RAM
 		game.drawMap();
 
+		// Rendering textures
+		game.textures.forEach((texture) => game.drawTexture(texture));
+
 		// Rendering grid
 		game.drawGrid();
 
@@ -877,6 +896,25 @@ let game = {
 		if(t == "x") n = Math.floor(n / game.grid.lineX) * game.grid.lineX;
 		if(t == "y") n = Math.floor(n / game.grid.lineY) * game.grid.lineY;
 		return n;
+	},
+	
+	// Adding texture to the map
+	addTexture: function(x, y, width, height, color, walkBool) {
+		let texture = {
+			x: x,
+			y: y,
+			width: width,
+			height: height,
+			color: color,
+			walk: walkBool,
+		};
+		game.textures.push(texture);
+	},
+
+	// Draw texture
+	drawTexture: function(texture) {
+		game.context.fillStyle = texture.color;
+		game.context.fillRect(texture.x, texture.y, texture.width, texture.height);
 	},
 	
 	// Draw map method
