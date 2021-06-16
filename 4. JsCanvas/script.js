@@ -139,7 +139,7 @@ let game = {
 		if(game.key.down == "Delete") {
 			let count = game.selectedItems.length;
 			for(let i = 0; i < count; i++) {
-				game.removeItems(game.selectedItems[i]);
+				game.removeItems(game.selectedItems[i].id);
 			}
 			game.clearSelection();
 		}
@@ -196,7 +196,7 @@ let game = {
 	},
 
 	// Mouse click events
-	mouseClick: function() {
+	mouseClick: async function() {
 		if(!game.mouse.click) return;
 
 		// Mouse click handling
@@ -229,11 +229,14 @@ let game = {
 			// Right mouse button
 			case 3:
 				if(game.placementBuild.state) game.clearPickBuild();
-				else game.selectedItems.forEach((item) => item.move = {x: game.mouse.e.offsetX - 8, y: game.mouse.e.offsetY - 8});
-				// game.items.forEach(item => {
-				// 	if(game.mouseCollision(item, game.mouse.e.offsetX, game.mouse.e.offsetY)) game.itemSetTarget(item.id);
-				// 	else { if(item.selected) { item.move = {x: game.mouse.e.offsetX - 8, y: game.mouse.e.offsetY - 8}; item.target = null; } };
-				// });
+				// Motion and targeting setting
+				let target = null;
+				game.items.forEach(item => {
+					if(game.mouseCollision(item, game.mouse.e.offsetX, game.mouse.coord.y)) target = item.id;
+					else { if(item.selected) { item.move = {x: game.mouse.e.offsetX - item.width / 2, y: game.mouse.e.offsetY - item.height / 2}; item.target = null; item.action = "move"; } };
+				});
+				// Targeting
+				if(target != null) { game.selectedItems.forEach((item) => { item.target = target; item.action = "target"; }); }
 				if(game.key.down == "AltLeft") game.addMisc("resources","metalcore", game.mouse.coord.x, game.mouse.coord.y);
 			break;
 			default: break;
@@ -251,14 +254,13 @@ let game = {
 
 	// Select item from selected items in #selectitems
 	selectItem: function(id) {
-		for(let i = 0; i < game.selectedItems.length; i++) {
-			if(game.selectedItems[i].id == id) {
-				let item = game.selectedItems[i];
+		game.selectedItems.forEach((item) => {
+			if(item.id == id) {
 				game.clearSelection();
 				game.selectedItems.push(item);
-				game.personallySelect(item);
+				game.personallySelected(item);
 			}
-		}
+		});
 		screen.setSelectedItems(game.personallySelected.id, game.selectedItems);
 	},
 
@@ -357,12 +359,12 @@ let game = {
 		} else {
 			game.clearSelection();
 			// Enumeration and add
-			for(let i = 0; i < game.items.length; i++) {
-				if(game.selectCollision(game.highlightLine, game.items[i])) {
-					game.items[i].selected = true;
-					game.selectedItems.push(game.items[i]);
+			game.items.forEach((item) => {
+				if(game.selectCollision(game.highlightLine, item)) {
+					item.selected = true;
+					game.selectedItems.push(item);
 				}
-			}
+			});
 		}
 		// Set information about misc
 		game.miscs.forEach((misc) => {
@@ -440,10 +442,9 @@ let game = {
 	// Movement items
 	itemMove: function(item) {
 		if(item.type == "building") return;
-		// item.action = "run";
 
 		if(game.mouseCollision(item, item.move.x, item.move.y)) {
-			// item.action = "stand";
+			item.action = "stand";
 			return item.move = {};
 		}
 
@@ -454,18 +455,15 @@ let game = {
 	},
 	
 	// Significantly modify target system
-	// Set following targer for item
-	itemSetTarget(id) {
-		game.selectedItems.forEach((item) => item.target = id);
-	},
-
 	// Movement items by target
 	itemMoveTarget(item) {
-		if(item.target == null) return;
+		if(item.target == null || item.action != "target") return;
 		let it = game.getItemById(item.target);
-		if(it == undefined) return item.target = null;
-		if(game.moveCollision(item, it))
-			return item.target = null;
+		if(it == undefined || game.moveCollision(item, it)) {
+			item.action = "stand";
+			item.target = null;
+			return item.move = {};
+		}
 		item.move.x = it.x;
 		item.move.y = it.y;
 	},
@@ -477,12 +475,20 @@ let game = {
 
 	// Handling move collision
 	moveCollision(item, it) {
-		if(item.x <= (it.x + it.width)
-			&& (item.x + item.width) >= it.x
-			&& item.y <= (it.y + it.height)
-			&& (item.y + item.height) >= it.y)
+		if(	item.x <= (it.x + it.width) && (item.x + item.width) >= it.x
+			&& item.y <= (it.y + it.height) && (item.y + item.height) >= it.y)
 			return true;
 		else return false;
+	},
+
+	// Behavior of items when attacked
+	attackOnEnemy: function(item, it) {
+		if(item.type == "building" || item.faction == it.faction || item.action != "stand") return;
+		if(item.x - item.sight <= (it.x + it.width) && it.x - item.sight <= (item.x + item.width)
+			&& item.y - item.sight <= (it.y + it.height) && it.y - item.sight <= (item.y + item.height)){
+			item.action = "target";
+			item.target = it.id;
+		}
 	},
 
 	// Update game data
@@ -497,40 +503,28 @@ let game = {
 		screen.setInformationItem(game.personallySelected);
 
 		// Handling data items
-		for(let i = 0; i < game.items.length; i++) {
+		game.items.forEach((item) => {
 			// Handling a collision with the edges of the map
-			game.edgesCollision(game.items[i]);
+			game.edgesCollision(item);
 
 			// Handling collision items
-			for(let j = 0; j < game.items.length; j++) {
-				game.itemsCollision(game.items[i], game.items[j]);
-
+			game.items.forEach((it) => {
+				game.itemsCollision(item, it);
 				// Behavior of items when attacked
-				game.attackOnEnemy(game.items[i], game.items[j]);
+				game.attackOnEnemy(item, it);
+			});
 
-				// Handling collision items and Misc
-				for (let j = 0; j < game.miscs.length; j++) 
-					game.miscCollision(game.items[i], game.miscs[j]);
-			}
+			// Handling collision items and Misc
+			game.miscs.forEach((misc) => game.miscCollision(item, misc));
 
 			// Movement items
-			game.itemMove(game.items[i]);
+			game.itemMove(item);
 			// Movement target items, unfinished
-			game.itemMoveTarget(game.items[i]);
-		}
+			game.itemMoveTarget(item);
+		});
 
 		// Select many items in highlight line
 		if(game.mouse.stateHightlightLine) game.selectHightlightLine();
-	},
-
-	// Behavior of items when attacked
-	attackOnEnemy: function(item, it) {
-		if(item.type == "building") return;
-		if(item.faction == it.faction) return;
-		if(item.x - item.sight <= (it.x + it.width) && it.x - item.sight <= (item.x + item.width)
-			&& item.y - item.sight <= (it.y + it.height) && it.y - item.sight <= (item.y + item.height)){
-			item.target = it.id;
-		}
 	},
 
 	// Handling a collision with the edges of the map
@@ -830,13 +824,11 @@ let game = {
 	},
 
 	// Remove items
-	removeItems(item) {
+	removeItems(id) {
 		// Remove from items array
-		for(let i = 0; i < game.items.length; i++) {
-			if(game.items[i].id == item.id) {
-				game.items.splice(i, 1); return;
-			}
-		}
+		game.items.forEach((item, i) => {
+			if(item.id == id) game.items.splice(i, 1);
+		});
 	},
 
 	// Draw Item
