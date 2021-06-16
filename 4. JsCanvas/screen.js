@@ -97,12 +97,13 @@ let screen = {
 				$("td#a11").html(`<img id="stop" src='gui/stop.png' onclick='game.itemMoveStop()'></img>`).addClass("aStop");
 			break;
 			case "building": // если здание
-				let color = "";
 				switch(item.name) {
 					case "capitol": // капитолий
 						$("td#a11").html(`<img src='images/worker.png' onclick='game.addItem("unit", "worker", ${item.x + item.width / 2}, ${item.y + item.height + 16}, "${item.faction}", "${item.faction}")' />`).addClass("aWorker");
 						$("td#a12").html(`<img src='images/soldier.png' onclick='game.addItem("unit", "soldier", ${item.x + item.width / 2}, ${item.y + item.height + 16}, "${item.faction}", "${item.faction}")' />`).addClass("aSoldier");
-						$("td#a13").html(`<img src='images/hero.png' onclick='game.addItem("hero", "leonid", ${item.x + item.width / 2}, ${item.y + item.height + 16}, "${item.faction}", "${item.faction}")' />`).addClass("aHero");
+					break;
+					case "temple": // храм
+						$("td#a11").html(`<img src='images/hero.png' onclick='game.addItem("hero", "leonid", ${item.x + item.width / 2}, ${item.y + item.height + 16}, "${item.faction}", "${item.faction}")' />`).addClass("aHero");
 					break;
 				}
 			break;

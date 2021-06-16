@@ -60,11 +60,16 @@ let game = {
 		game.resetData();
 		game.cashMethod();
 		game.gridMethod();
-		game.mouseMethod();
 		game.keysMethod();
+		game.mouseMethod();
+		game.cameraMethod();
 
 		// Adding textures
 		game.addTexture(game.grid.lineX * 6, 0, game.grid.collsX * game.grid.lineX - game.grid.lineX * 12, game.grid.lineY * 6, "#0076a3", false);
+		game.addTexture(game.grid.lineX * 6, game.grid.collsY * game.grid.lineY - game.grid.lineY * 6, game.grid.collsX * game.grid.lineX - game.grid.lineX * 12, game.grid.lineY * 6, "#0076a3", false);
+		game.addTexture(0, 0, game.grid.lineX * 6, game.grid.collsY * game.grid.lineY, "green", true);
+		game.addTexture(game.grid.collsX * game.grid.lineX - game.grid.lineX * 6, 0, game.grid.lineX * 6, game.grid.collsY * game.grid.lineY, "#e37421", true);
+		game.addTexture(game.grid.lineX * 6, game.grid.lineY * 6, game.grid.collsX * game.grid.lineX - game.grid.lineX * 12, game.grid.collsY * game.grid.lineY - game.grid.lineY * 12, "gray", true);
 
 		game.background = game.loadImage("gui/bg_game.jpg");
 		game.background.onload = () => callback(true);
@@ -76,8 +81,8 @@ let game = {
 		game.counter = 1;
 
 		// Game data Arrays
-		game.miscs = [];
 		game.items = [];
+		game.miscs = [];
 		game.textures = [];
 		game.sortedItems = [];
 		game.selectedItems = [];
@@ -96,6 +101,10 @@ let game = {
 
 	// Grid method
 	gridMethod: function() {
+		screen.changeScreen('gamescreen');
+		screen.canvasWidth = $("canvas").width();
+		screen.canvasHeight = $("canvas").height();
+		screen.changeScreen('loadscreen');
 		game.grid = {};
 		game.grid.color = "#fff";
 		game.grid.lineX = 16;
@@ -119,14 +128,29 @@ let game = {
 		};
 	},
 
-	// Camera method
+	// Camera method, finalize
 	cameraMethod: function() {
 		game.camera = {
 			x: 0,
 			y: 0,
-			width: 100,
-			height: 100,
+			width: 960,
+			height: 540,
 		};
+	},
+
+	// Camera method
+	cameraView: function() {
+		game.context.setTransform(1,0,0,1,0,0);
+		game.context.clearRect(0,0, game.canvas.width, game.canvas.height);
+		game.context.translate(game.camera.x, game.camera.y);
+	},
+
+	// Moving camera
+	cameraMove: function(x, y) {
+		if(x < game.grid.lineX) game.camera.x += 10;
+		if(x > game.canvas.width - game.grid.lineX) game.camera.x -= 10;
+		if(y < game.grid.lineY) game.camera.y += 10;
+		if(y > game.canvas.height - game.grid.lineY) game.camera.y -= 10;
 	},
 
 	// Keys method
@@ -194,6 +218,7 @@ let game = {
 		game.mouse.e = {};
 		// Mouse coordinats
 		game.mouse.coord = {};
+		game.mouse.camera = {};
 
 		// Click handling
 		$("canvas").mousedown((e) => {
@@ -206,14 +231,18 @@ let game = {
 
 		// Mouse move handling
 		$("canvas").mousemove((e) => {
-			game.mouse.coord.x = e.offsetX;
-			game.mouse.coord.y = e.offsetY;
+			game.mouse.camera.x = e.offsetX;
+			game.mouse.camera.y = e.offsetY;
+			game.mouse.coord.x = e.offsetX - game.camera.x;
+			game.mouse.coord.y = e.offsetY - game.camera.y;
 		});
 	},
 
 	// Mouse click events
 	mouseClick: function() {
 		if(!game.mouse.click) return;
+		let x = game.mouse.e.offsetX - game.camera.x;
+		let y = game.mouse.e.offsetY - game.camera.y;
 
 		// Mouse click handling
 		switch(game.mouse.e.which) {
@@ -221,19 +250,21 @@ let game = {
 			case 1:
 				// Add item building
 				if(game.placementBuild.state) {
-					game.addItem(
-						game.placementBuild.type,
-						game.placementBuild.name,
-						game.gridSize(game.mouse.coord.x, "x"),
-						game.gridSize(game.mouse.coord.y, "y"),
-						game.placementBuild.faction,
-						game.placementBuild.faction,
-					);
+					game.textures.forEach((texture) => {
+						if(game.mouseCollision(texture, x, y))
+							game.placementBuild.build = false;
+					});
+					if(game.placementBuild.build) {
+						game.addItem(
+							game.placementBuild.type, game.placementBuild.name, game.gridSize(game.mouse.coord.x, "x"),
+							game.gridSize(game.mouse.coord.y, "y"), game.placementBuild.faction, game.placementBuild.faction
+						);
+					} else setNotification("Данное место недоступно для строительства");
 					game.clearPickBuild();
 				}
 
 				// Selection Actions
-				if(game.key.down == "ShiftLeft") game.selectionActions(game.mouse.e.offsetX, game.mouse.e.offsetY);
+				if(game.key.down == "ShiftLeft") game.selectionActions(x, y);
 			break;
 			// Middle mouse button
 			case 2:
@@ -248,8 +279,8 @@ let game = {
 				// Motion and targeting setting
 				let target = null;
 				game.items.forEach(item => {
-					if(game.mouseCollision(item, game.mouse.e.offsetX, game.mouse.coord.y)) target = item.id;
-					else { if(item.selected) { item.move = {x: game.mouse.e.offsetX - item.width / 2, y: game.mouse.e.offsetY - item.height / 2}; item.target = null; item.action = "move"; } };
+					if(game.mouseCollision(item, x, y)) target = item.id;
+					else { if(item.selected) { item.move = {x: x - item.width / 2, y: y - item.height / 2}; item.target = null; item.action = "move"; } };
 				});
 				// Targeting
 				if(target != null) { game.selectedItems.forEach((item) => { item.target = target; item.action = "target"; }); }
@@ -350,10 +381,10 @@ let game = {
 	// Draw highlight line for select many items
 	drawHighlightLine: function() {
 		game.highlightLine = {
-			x: game.mouse.e.offsetX,
-			y: game.mouse.e.offsetY,
-			width: game.mouse.coord.x - game.mouse.e.offsetX,
-			height: game.mouse.coord.y - game.mouse.e.offsetY
+			x: game.mouse.e.offsetX - game.camera.x,
+			y: game.mouse.e.offsetY - game.camera.y,
+			width: game.mouse.coord.x - (game.mouse.e.offsetX - game.camera.x),
+			height: game.mouse.coord.y - (game.mouse.e.offsetY - game.camera.y)
 		};
 		game.context.strokeStyle = "green";
 		game.context.lineWidth = 3;
@@ -512,6 +543,11 @@ let game = {
 		// Hold the mouse
 		game.mouseHolding();
 
+		// Camera move
+		game.cameraMove(game.mouse.camera.x, game.mouse.camera.y);
+		// Camera test
+		game.cameraView();
+
 		// Set information about cash
 		screen.setCash(game.cash);
 
@@ -530,6 +566,9 @@ let game = {
 				game.attackOnEnemy(item, it);
 			});
 
+			// Handling collision items and textures
+			game.textures.forEach((texture) => game.texturesCollision(item, texture));
+
 			// Handling collision items and Misc
 			game.miscs.forEach((misc) => game.miscCollision(item, misc));
 
@@ -537,6 +576,13 @@ let game = {
 			game.itemMove(item);
 			// Movement target items, unfinished
 			game.itemMoveTarget(item);
+		});
+
+		// Handling data selected items
+		game.selectedItems.forEach((item) => {
+			game.items.forEach((it) => game.itemsCollision(item, it));
+			game.textures.forEach((texture) => game.texturesCollision(item, texture));
+			game.miscs.forEach((misc) => game.miscCollision(item, misc));
 		});
 
 		// Select many items in highlight line
@@ -551,34 +597,52 @@ let game = {
 		if((el.y + el.height) >= game.canvas.height) el.y -= el.repulsionSpeed;
 	},
 
-	// Check/Handling items collision
-	itemsCollision: function(item1, item2) {
-		if(	item1.x <= (item2.x + item2.width)
-			&& item2.x <= (item1.x + item1.width)
-			&& item1.y <= (item2.y + item2.height)
-			&& item2.y <= (item1.y + item1.height))
+	// Handling texture collision
+	texturesCollision: function(item, texture) {
+		if(texture.walk) return;
+		if(	item.x <= (texture.x + texture.width)
+			&& texture.x <= (item.x + item.width)
+			&& item.y <= (texture.y + texture.height)
+			&& texture.y <= (item.y + item.height))
 		{
-			let acenter = {x: item1.x + item1.width / 2, y: item1.y + item1.height / 2};
-			let bcenter = {x: item2.x + item2.width / 2, y: item2.y + item2.height / 2};
+			let acenter = {x: item.x + item.width / 2, y: item.y + item.height / 2};
+			let bcenter = {x: texture.x + texture.width / 2, y: texture.y + texture.height / 2};
 			let d = {x: acenter.x - bcenter.x, y: acenter.y - bcenter.y};
-			if(d.x >= 0) item1.x += item1.repulsionSpeed;
-			if(d.x <= 0) item1.x -= item1.repulsionSpeed;
-			if(d.y >= 0) item1.y += item1.repulsionSpeed;
-			if(d.y <= 0) item1.y -= item1.repulsionSpeed;
+			if(d.x >= 0) item.x += item.repulsionSpeed;
+			if(d.x <= 0) item.x -= item.repulsionSpeed;
+			if(d.y >= 0) item.y += item.repulsionSpeed;
+			if(d.y <= 0) item.y -= item.repulsionSpeed;
+		}
+	},
+
+	// Check/Handling items collision
+	itemsCollision: function(item, it) {
+		if(	item.x <= (it.x + it.width)
+			&& it.x <= (item.x + item.width)
+			&& item.y <= (it.y + it.height)
+			&& it.y <= (item.y + item.height))
+		{
+			let acenter = {x: item.x + item.width / 2, y: item.y + item.height / 2};
+			let bcenter = {x: it.x + it.width / 2, y: it.y + it.height / 2};
+			let d = {x: acenter.x - bcenter.x, y: acenter.y - bcenter.y};
+			if(d.x >= 0) item.x += item.repulsionSpeed;
+			if(d.x <= 0) item.x -= item.repulsionSpeed;
+			if(d.y >= 0) item.y += item.repulsionSpeed;
+			if(d.y <= 0) item.y -= item.repulsionSpeed;
 
 			// Damage
-			if(item1.faction != item2.faction) {
-				if(item1.type == "building") return;
-				let damage1 = (Math.floor(Math.random() * (item1.damage[1] - item1.damage[0])) + item1.damage[0]) - item2.defense;
-				let damage2 = (Math.floor(Math.random() * (item2.damage[1] - item2.damage[0])) + item2.damage[0]) - item1.defense;
+			if(item.faction != it.faction) {
+				if(item.type == "building") return;
+				let damage1 = (Math.floor(Math.random() * (item.damage[1] - item.damage[0])) + item.damage[0]) - it.defense;
+				let damage2 = (Math.floor(Math.random() * (it.damage[1] - it.damage[0])) + it.damage[0]) - item.defense;
 				if(damage1 <= 0) damage1 = 0;
 				if(damage2 <= 0) damage2 = 0;
-				item2.hitPoints -= damage1;
-				item1.hitPoints -= damage2;
-				if(d.x >= 0) item1.x += 10;
-				if(d.x <= 0) item1.x -= 10;
-				if(d.y >= 0) item1.y += 10;
-				if(d.y <= 0) item1.y -= 10;
+				it.hitPoints -= damage1;
+				item.hitPoints -= damage2;
+				if(d.x >= 0) item.x += 10;
+				if(d.x <= 0) item.x -= 10;
+				if(d.y >= 0) item.y += 10;
+				if(d.y <= 0) item.y -= 10;
 			}
 		}
 	},
@@ -637,6 +701,7 @@ let game = {
 
 		// Rendering map, minus RAM
 		game.drawMap();
+
 
 		// Rendering textures
 		game.textures.forEach((texture) => game.drawTexture(texture));
@@ -729,6 +794,7 @@ let game = {
 		game.placementBuild = buildings.list[buildName];
 		game.placementBuild.type = "building";
 		game.placementBuild.state = true;
+		game.placementBuild.build = true;
 		game.placementBuild.faction = faction;
 	},
 
