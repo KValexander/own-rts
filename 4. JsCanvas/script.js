@@ -56,6 +56,7 @@ let game = {
 
 	// Load game data, assets, triggers, ect
 	loading: function(data, callback) {
+		console.log(data);
 		// Reset data and handling methods
 		game.resetData();
 		game.mapMethod();
@@ -67,6 +68,12 @@ let game = {
 
 		// Recording the current mission
 		game.map.data = data.missions[game.map.currentMission].data;
+
+		// Adding triggers
+		game.map.data.triggers.forEach((trigger) => {
+			game.triggerAdd(trigger);
+		});
+		console.log(game.triggers);
 
 		// Cash
 		game.cash.gold = game.map.data.cash.gold;
@@ -87,6 +94,8 @@ let game = {
 			game.addTexture(texture.x, texture.y, texture.width, texture.height, texture.color, texture.walk);
 		});
 
+		game.player.faction = data.playerFaction;
+
 		game.background = game.loadImage("gui/bg_game.jpg");
 		game.background.onload = () => callback(true);
 	},
@@ -99,6 +108,7 @@ let game = {
 		// Game data Arrays
 		game.items = [];
 		game.miscs = [];
+		game.triggers = [];
 		game.textures = [];
 		game.sortedItems = [];
 		game.selectedItems = [];
@@ -108,6 +118,7 @@ let game = {
 		game.placementBuild = {};
 		game.highlightLine = {};
 		game.camera = {};
+		game.player = {};
 		game.mouse = {};
 		game.grid = {};
 		game.cash = {};
@@ -123,6 +134,30 @@ let game = {
 		game.grid.lineY = 16;
 		game.grid.collsX = screen.canvasWidth / game.grid.lineX;
 		game.grid.collsY = screen.canvasHeight / game.grid.lineX;
+	},
+
+	// Handling triggers
+	triggerHandling: function(trigger) {
+		if(trigger.type == "conditional") {
+			if(trigger.condition()) {
+				trigger.action();
+				game.triggerRemove(trigger);
+			}
+		}
+	},
+
+	// Adding a trigger
+	triggerAdd: function(data) {
+		data.id = game.counter++;
+		game.triggers.push(data);
+	},
+
+	// Removing a trigger
+	triggerRemove: function(trigger) {
+		game.triggers.forEach((trg, i) => {
+			if(trg.id == trigger.id)
+				game.triggers.splice(i, 1);
+		});
 	},
 
 	// Map method
@@ -437,6 +472,9 @@ let game = {
 		if(check != undefined)
 			game.selectedItems = game.selectedItems.filter(item => item.type != "building");
 
+		// Removing enemy faction units
+		game.selectedItems = game.selectedItems.filter(item => item.faction == game.player.faction);
+
 		if(game.selectedItems.length != 0)
 			game.personallySelect(game.selectedItems[0]);
 
@@ -493,7 +531,7 @@ let game = {
 
 	// Movement items
 	itemMove: function(item) {
-		if(item.type == "building") return;
+		if(item.type == "building" || game.player.faction != item.faction) return;
 		if(item.action == "move" || item.action == "target") item.speed = 2;
 		else item.speed = 0;
 
@@ -551,6 +589,9 @@ let game = {
 	update: function() {
 		// Hold the mouse
 		game.mouseHolding();
+
+		// Trigger handling
+		game.triggers.forEach((trigger) => game.triggerHandling(trigger));
 
 		// Camera move
 		game.cameraMove(game.mouse.camera.x, game.mouse.camera.y);
@@ -635,6 +676,8 @@ let game = {
 			// Damage, move to a separate function
 			if(item.faction != it.faction) {
 				if(item.type == "building") return;
+				it.action = "target"; it.target = item.id;
+				item.action = "target"; item.target = it.id;
 				let damage1 = (Math.floor(Math.random() * (item.damage[1] - item.damage[0])) + item.damage[0]) - it.defense;
 				let damage2 = (Math.floor(Math.random() * (it.damage[1] - it.damage[0])) + it.damage[0]) - item.defense;
 				if(damage1 <= 0) damage1 = 0;
@@ -831,21 +874,28 @@ let game = {
 		// Cleaning up what I haven't done yet
 		if(type != "building") game.itemMoveStop(item);
 
-		// Cost calculation
-		if(game.cash.gold < item.cost.gold || game.cash.gold <= 0) return setNotification("Недостаточно ресурсов");
-		else game.cash.gold -= item.cost.gold;
-		if("wood" in item.cost) {
-			if(game.cash.wood < item.cost.wood || game.cash.wood <= 0) return setNotification("Недостаточно ресурсов");
-			else game.cash.wood -= item.cost.wood;
-		}
-		if("metal" in item.cost) {
-			if(game.cash.metal < item.cost.metal || game.cash.metal <= 0) return setNotification("Недостаточно ресурсов");
-			else game.cash.metal -= item.cost.metal;
-		}
-		if("food" in item.cost) {
-			if(game.cash.food < item.cost.foor || game.cash.food <= 0) return setNotification("Недостаточно ресурсов");
-			else game.cash.food -= item.cost.food;
-		}
+		// Cost calculation, unoptimized
+		let goldstate = true, woodstate = true, metalstate = true, foodstate = true;
+		if("gold" in item.cost)
+			if(game.cash.gold < item.cost.gold || game.cash.gold <= 0)
+				goldstate = false;
+		if("wood" in item.cost)
+			if(game.cash.wood < item.cost.wood || game.cash.wood <= 0)
+				woodstate = false;
+		if("metal" in item.cost)
+			if(game.cash.metal < item.cost.metal || game.cash.metal <= 0)
+				metalstate = false;
+		if("food" in item.cost)
+			if(game.cash.food < item.cost.foor || game.cash.food <= 0)
+				foodstate = false;
+
+		if(!goldstate || !woodstate || !metalstate || !foodstate)
+			return setNotification("Недостаточно ресурсов");
+
+		if("gold" in item.cost) game.cash.gold -= item.cost.gold;
+		if("wood" in item.cost) game.cash.wood -= item.cost.wood;
+		if("metal" in item.cost) game.cash.metal -= item.cost.metal;
+		if("food" in item.cost) game.cash.food -= item.cost.food;
 
 		// Increase food for building a farm
 		if(item.name == "farm") game.cash.food += 5;
@@ -1030,4 +1080,30 @@ let game = {
 		game.running = false;
 	},
 
+};
+
+
+// Conditions for triggers
+// Death check item
+let isDead = (id) => {
+	let item = game.getItemById(id);
+	if(item == undefined) return true;
+	else return false;
+};
+
+// Checking to reach the specified location
+let reachThePlace = (id, x, y, width, height) => {
+	let item = game.getItemById(id);
+	if(item.x <= (x + width) && x <= (item.x + item.width)
+		&& item.y <= (y + height) && y <= (item.y + item.height))
+		return true;
+	else return false;
+};
+
+// Some actions for triggers
+let giveCash = (gold, wood, metal, food) => {
+	if(gold != undefined) game.cash.gold += gold;
+	if(wood != undefined) game.cash.wood += wood;
+	if(metal != undefined) game.cash.metal += metal;
+	if(food != undefined) game.cash.food += food;
 };
