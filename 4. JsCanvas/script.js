@@ -58,18 +58,34 @@ let game = {
 	loading: function(data, callback) {
 		// Reset data and handling methods
 		game.resetData();
+		game.mapMethod();
 		game.cashMethod();
 		game.gridMethod();
 		game.keysMethod();
 		game.mouseMethod();
 		game.cameraMethod();
 
+		// Recording the current mission
+		game.map.data = data.missions[game.map.currentMission].data;
+
+		// Cash
+		game.cash.gold = game.map.data.cash.gold;
+		game.cash.wood = game.map.data.cash.wood;
+		game.cash.metal = game.map.data.cash.metal;
+		game.cash.food = game.map.data.cash.food;
+
+		// Adding items
+		game.map.data.items.forEach((item) => {
+			game.addItem(item.type, item.name, item.x, item.y, item.faction, item.color, item.life, item.id);
+		});
+
+		// Generating trees
+		for(let i = 16; i <= 16 * 16; i += 16) { game.addMisc("resources", "tree", 16, i); game.addMisc("resources", "tree", 16 * 16, i); } for(let i = 16; i <= 16 * 16; i += 16) { game.addMisc("resources", "tree", i, 16); game.addMisc("resources", "tree", i, 16 * 16); }
+
 		// Adding textures
-		game.addTexture(game.grid.lineX * 6, 0, game.grid.collsX * game.grid.lineX - game.grid.lineX * 12, game.grid.lineY * 6, "#0076a3", false);
-		game.addTexture(game.grid.lineX * 6, game.grid.collsY * game.grid.lineY - game.grid.lineY * 6, game.grid.collsX * game.grid.lineX - game.grid.lineX * 12, game.grid.lineY * 6, "#0076a3", false);
-		game.addTexture(0, 0, game.grid.lineX * 6, game.grid.collsY * game.grid.lineY, "green", true);
-		game.addTexture(game.grid.collsX * game.grid.lineX - game.grid.lineX * 6, 0, game.grid.lineX * 6, game.grid.collsY * game.grid.lineY, "#e37421", true);
-		game.addTexture(game.grid.lineX * 6, game.grid.lineY * 6, game.grid.collsX * game.grid.lineX - game.grid.lineX * 12, game.grid.collsY * game.grid.lineY - game.grid.lineY * 12, "gray", true);
+		game.map.data.textures.forEach((texture) => {
+			game.addTexture(texture.x, texture.y, texture.width, texture.height, texture.color, texture.walk);
+		});
 
 		game.background = game.loadImage("gui/bg_game.jpg");
 		game.background.onload = () => callback(true);
@@ -101,10 +117,6 @@ let game = {
 
 	// Grid method
 	gridMethod: function() {
-		screen.changeScreen('gamescreen');
-		screen.canvasWidth = $("canvas").width();
-		screen.canvasHeight = $("canvas").height();
-		screen.changeScreen('loadscreen');
 		game.grid = {};
 		game.grid.color = "#fff";
 		game.grid.lineX = 16;
@@ -116,15 +128,17 @@ let game = {
 	// Map method
 	mapMethod: function() {
 		game.map = {};
+		game.map.data = {};
+		game.map.currentMission = 0;
 	},
 
 	// Cash method
 	cashMethod: function() {
 		game.cash = {
-			gold: 1000,
-			tree: 800,
-			metal: 500,
-			food: 10,
+			gold: 0,
+			wood: 0,
+			metal: 0,
+			food: 0,
 		};
 	},
 
@@ -133,8 +147,7 @@ let game = {
 		game.camera = {
 			x: 0,
 			y: 0,
-			width: 960,
-			height: 540,
+			scale: 1,
 		};
 	},
 
@@ -142,6 +155,7 @@ let game = {
 	cameraView: function() {
 		game.context.setTransform(1,0,0,1,0,0);
 		game.context.clearRect(0,0, game.canvas.width, game.canvas.height);
+		game.context.scale(game.camera.scale,game.camera.scale);
 		game.context.translate(game.camera.x, game.camera.y);
 	},
 
@@ -190,7 +204,7 @@ let game = {
 
 		// Stop motion items
 		if(game.key.down == "KeyS") {
-			game.itemMoveStop();
+			game.itemsMoveStop();
 		}
 
 		// Switch between selected items
@@ -251,9 +265,7 @@ let game = {
 				// Add item building
 				if(game.placementBuild.state) {
 					game.textures.forEach((texture) => {
-						if(game.mouseCollision(texture, x, y)){
-							if(!texture.walk) game.placementBuild.build = false;
-						}
+						if(game.mouseCollision(texture, x, y)) if(!texture.walk) game.placementBuild.build = false;
 					});
 					if(game.placementBuild.build) {
 						game.addItem(
@@ -270,7 +282,6 @@ let game = {
 			// Middle mouse button
 			case 2:
 				if(game.key.down == "AltLeft") game.addMisc("resources", "goldmine", game.mouse.coord.x, game.mouse.coord.y);
-				// if(game.key.down == "AltLeft") game.addItem("building", "capitol", game.mouse.coord.x, game.mouse.coord.y, "neutral");
 				if(game.key.down == "ShiftLeft") game.addItem("unit", "worker", game.mouse.coord.x, game.mouse.coord.y, "red", "red");
 				if(game.key.down == "ControlLeft") game.addItem("unit", "worker", game.mouse.coord.x, game.mouse.coord.y, "blue", "blue");
 			break;
@@ -281,7 +292,7 @@ let game = {
 				let target = null;
 				game.items.forEach(item => {
 					if(game.mouseCollision(item, x, y)) target = item.id;
-					else { if(item.selected) { item.move = {x: x - item.width / 2, y: y - item.height / 2}; item.target = null; item.action = "move"; } };
+					else { if(item.selected) { item.target = null; item.action = "move"; item.move = {x: x - item.width / 2, y: y - item.height / 2}; } };
 				});
 				// Targeting
 				if(target != null) { game.selectedItems.forEach((item) => { item.target = target; item.action = "target"; }); }
@@ -306,7 +317,7 @@ let game = {
 			if(item.id == id) {
 				game.clearSelection();
 				game.selectedItems.push(item);
-				game.personallySelected(item);
+				game.personallySelect(item);
 			}
 		});
 		screen.setSelectedItems(game.personallySelected.id, game.selectedItems);
@@ -318,7 +329,7 @@ let game = {
 		screen.clearSelectedItems();
 		screen.clearActItem();
 		game.clearPickBuild();
-		// game.itemMoveStop();
+		// game.itemsMoveStop();
 		game.personallySelected = {};
 		while(game.selectedItems.length > 0) {
 			game.selectedItems.pop().selected = false;
@@ -420,18 +431,11 @@ let game = {
 				screen.setInformationMisc(misc);
 		});
 
-		// Filtration, improve
-		let unitAvailability = false;
-		let buildingAvailability = false;
-		game.selectedItems.forEach((item, i) => {
-			if(item.type == "unit") unitAvailability = true;
-			if(item.type == "building") buildingAvailability = true;
-		});
-		if(unitAvailability && buildingAvailability) {
-			game.selectedItems.forEach((it, i) => {
-				if(it.type == "building") game.selectedItems.splice(i, 1);
-			});
-		}
+		// Filtration
+		// Screening of buildings in the case of units
+		let check = game.selectedItems.find((item) => item.type == "unit");
+		if(check != undefined)
+			game.selectedItems = game.selectedItems.filter(item => item.type != "building");
 
 		if(game.selectedItems.length != 0)
 			game.personallySelect(game.selectedItems[0]);
@@ -490,11 +494,11 @@ let game = {
 	// Movement items
 	itemMove: function(item) {
 		if(item.type == "building") return;
+		if(item.action == "move" || item.action == "target") item.speed = 2;
+		else item.speed = 0;
 
-		if(game.mouseCollision(item, item.move.x, item.move.y)) {
-			item.action = "stand";
-			return item.move = {};
-		}
+		if(game.mouseCollision(item, item.move.x, item.move.y))
+			return game.itemMoveStop(item);
 
 		if(item.x < item.move.x) item.x += item.speed;
 		if(item.x > item.move.x) item.x -= item.speed;
@@ -507,18 +511,22 @@ let game = {
 	itemMoveTarget(item) {
 		if(item.target == null || item.action != "target") return;
 		let it = game.getItemById(item.target);
-		if(it == undefined || game.moveCollision(item, it)) {
-			item.action = "stand";
-			item.target = null;
-			return item.move = {};
-		}
+		if(it == undefined || game.moveCollision(item, it)) return game.itemMoveStop(item);
 		item.move.x = it.x;
 		item.move.y = it.y;
 	},
 
 	// Stop motion item
-	itemMoveStop: function() {
-		game.selectedItems.forEach((it) => { it.move = {}; it.target = null; it.action = "stand"; });
+	itemMoveStop: function(item) {
+		item.move = {};
+		item.speed = 0;
+		item.target = null;
+		item.action = "stand";
+	},
+
+	// Stop motion items
+	itemsMoveStop: function() {
+		game.selectedItems.forEach((item) => { item.move = {}; item.target = null; item.action = "stand"; item.speed = 0; });
 	},
 
 	// Handling move collision
@@ -579,23 +587,16 @@ let game = {
 			game.itemMoveTarget(item);
 		});
 
-		// Handling data selected items
-		game.selectedItems.forEach((item) => {
-			game.items.forEach((it) => game.itemsCollision(item, it));
-			game.textures.forEach((texture) => game.texturesCollision(item, texture));
-			game.miscs.forEach((misc) => game.miscCollision(item, misc));
-		});
-
 		// Select many items in highlight line
 		if(game.mouse.stateHightlightLine) game.selectHightlightLine();
 	},
 
 	// Handling a collision with the edges of the map
 	edgesCollision: function(el) {
-		if(el.x <= 0) el.x += el.repulsionSpeed;
-		if((el.x + el.width) >= game.canvas.width) el.x -= el.repulsionSpeed;
-		if(el.y <= 0) el.y += el.repulsionSpeed;
-		if((el.y + el.height) >= game.canvas.height) el.y -= el.repulsionSpeed;
+		if(el.x <= 0) { el.speed = 0; el.x += el.repulsionSpeed; }
+		if((el.x + el.width) >= game.canvas.width) { el.speed = 0; el.x -= el.repulsionSpeed; }
+		if(el.y <= 0) { el.speed = 0; el.y += el.repulsionSpeed; }
+		if((el.y + el.height) >= game.canvas.height) { el.speed = 0; el.y -= el.repulsionSpeed; }
 	},
 
 	// Handling texture collision
@@ -609,29 +610,29 @@ let game = {
 			let acenter = {x: item.x + item.width / 2, y: item.y + item.height / 2};
 			let bcenter = {x: texture.x + texture.width / 2, y: texture.y + texture.height / 2};
 			let d = {x: acenter.x - bcenter.x, y: acenter.y - bcenter.y};
-			if(d.x >= 0) item.x += item.repulsionSpeed;
-			if(d.x <= 0) item.x -= item.repulsionSpeed;
-			if(d.y >= 0) item.y += item.repulsionSpeed;
-			if(d.y <= 0) item.y -= item.repulsionSpeed;
+			if(d.x >= 0) { item.speed = 0; item.x += item.repulsionSpeed; }
+			if(d.x <= 0) { item.speed = 0; item.x -= item.repulsionSpeed; }
+			if(d.y >= 0) { item.speed = 0; item.y += item.repulsionSpeed; }
+			if(d.y <= 0) { item.speed = 0; item.y -= item.repulsionSpeed; }
 		}
 	},
 
 	// Check/Handling items collision
 	itemsCollision: function(item, it) {
-		if(	item.x <= (it.x + it.width)
-			&& it.x <= (item.x + item.width)
-			&& item.y <= (it.y + it.height)
-			&& it.y <= (item.y + item.height))
+		if(	item.x <= (it.x + it.width + 1)
+			&& it.x <= (item.x + item.width + 1)
+			&& item.y <= (it.y + it.height + 1)
+			&& it.y <= (item.y + item.height + 1))
 		{
 			let acenter = {x: item.x + item.width / 2, y: item.y + item.height / 2};
 			let bcenter = {x: it.x + it.width / 2, y: it.y + it.height / 2};
 			let d = {x: acenter.x - bcenter.x, y: acenter.y - bcenter.y};
-			if(d.x >= 0) item.x += item.repulsionSpeed;
-			if(d.x <= 0) item.x -= item.repulsionSpeed;
-			if(d.y >= 0) item.y += item.repulsionSpeed;
-			if(d.y <= 0) item.y -= item.repulsionSpeed;
+			if(d.x > 0) { item.speed = 0; item.x += item.repulsionSpeed; }
+			if(d.x < 0) { item.speed = 0; item.x -= item.repulsionSpeed; }
+			if(d.y > 0) { item.speed = 0; item.y += item.repulsionSpeed; }
+			if(d.y < 0) { item.speed = 0; item.y -= item.repulsionSpeed; }
 
-			// Damage
+			// Damage, move to a separate function
 			if(item.faction != it.faction) {
 				if(item.type == "building") return;
 				let damage1 = (Math.floor(Math.random() * (item.damage[1] - item.damage[0])) + item.damage[0]) - it.defense;
@@ -658,24 +659,16 @@ let game = {
 			let acenter = {x: item.x + item.width / 2, y: item.y + item.height / 2};
 			let bcenter = {x: res.x + res.width / 2, y: res.y + res.height / 2};
 			let d = {x: acenter.x - bcenter.x, y: acenter.y - bcenter.y};
-			if(d.x >= 0) {
-				item.x += item.repulsionSpeed;
-			}
-			if(d.x <= 0) {
-				item.x -= item.repulsionSpeed;
-			}
-			if(d.y >= 0) {
-				item.y += item.repulsionSpeed;
-			}
-			if(d.y <= 0) {
-				item.y -= item.repulsionSpeed;
-			}
+			if(d.x >= 0) { item.speed = 0; item.x += item.repulsionSpeed; }
+			if(d.x <= 0) { item.speed = 0; item.x -= item.repulsionSpeed; }
+			if(d.y >= 0) { item.speed = 0; item.y += item.repulsionSpeed; }
+			if(d.y <= 0) { item.speed = 0; item.y -= item.repulsionSpeed; }
 
-			// Mining
+			// Mining, move to a separate function
 			if(item.name == "worker" && res.mining && res.minerals > 0) {
 				switch(res.name) {
 					case "tree":
-						game.cash.tree += res.mining;
+						game.cash.wood += res.mining;
 						res.minerals -= res.mining;
 					break;
 					case "goldmine":
@@ -702,7 +695,6 @@ let game = {
 
 		// Rendering map, minus RAM
 		game.drawMap();
-
 
 		// Rendering textures
 		game.textures.forEach((texture) => game.drawTexture(texture));
@@ -812,7 +804,7 @@ let game = {
 	},
 
 	// Add Item
-	addItem: function(type, name, x, y, faction, color, life) {
+	addItem: function(type, name, x, y, faction, color, life, id) {
 		// Template variable
 		let temp = {};
 
@@ -837,32 +829,33 @@ let game = {
 		for (let key in temp) item[key] = temp[key];
 		
 		// Cleaning up what I haven't done yet
-		if(type != "building") {
-			item.target = null; item.move = {};
-		}
+		if(type != "building") game.itemMoveStop(item);
 
 		// Cost calculation
-		if(game.cash.gold < item.cost.gold) return setNotification("Недостаточно ресурсов");
+		if(game.cash.gold < item.cost.gold || game.cash.gold <= 0) return setNotification("Недостаточно ресурсов");
 		else game.cash.gold -= item.cost.gold;
-		if("tree" in item.cost) {
-			if(game.cash.tree < item.cost.tree) return setNotification("Недостаточно ресурсов");
-			else game.cash.tree -= item.cost.tree;
+		if("wood" in item.cost) {
+			if(game.cash.wood < item.cost.wood || game.cash.wood <= 0) return setNotification("Недостаточно ресурсов");
+			else game.cash.wood -= item.cost.wood;
 		}
 		if("metal" in item.cost) {
-			if(game.cash.metal < item.cost.metal) return setNotification("Недостаточно ресурсов");
+			if(game.cash.metal < item.cost.metal || game.cash.metal <= 0) return setNotification("Недостаточно ресурсов");
 			else game.cash.metal -= item.cost.metal;
 		}
 		if("food" in item.cost) {
-			if(game.cash.food < item.cost.foor) return setNotification("Недостаточно ресурсов");
+			if(game.cash.food < item.cost.foor || game.cash.food <= 0) return setNotification("Недостаточно ресурсов");
 			else game.cash.food -= item.cost.food;
 		}
-			
+
+		// Increase food for building a farm
+		if(item.name == "farm") game.cash.food += 5;
+
 		// Adding properties
-		item.id = game.counter++;
+		item.id = id || game.counter++;
 		item.x = x;
 		item.y = y;
 		item.faction = faction;
-		item.life = item.hitPoints;
+		item.life = life || item.hitPoints;
 
 		// Color image item
 		if(color != undefined && faction != "neutral") {
@@ -901,6 +894,8 @@ let game = {
 		});
 		screen.setSelectedItems(game.personallySelected.id, game.selectedItems);
 
+		if(item.name == "farm") game.cash.food -= 5;
+
 		// Remove from items array
 		for(let i = 0; i < game.items.length; i++) {
 			if(game.items[i].id == item.id) {
@@ -913,6 +908,7 @@ let game = {
 	removeItems(id) {
 		// Remove from items array
 		game.items.forEach((item, i) => {
+			if(item.name == "farm") game.cash.food -= 5;
 			if(item.id == id) game.items.splice(i, 1);
 		});
 	},

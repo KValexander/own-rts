@@ -108,7 +108,7 @@ let screen = {
 				}
 			break;
 			case "hero": // если герой
-
+				$("td#a11").html(`<img id="stop" src='gui/stop.png' onclick='game.itemMoveStop()'></img>`).addClass("aStop");
 			break;
 		}
 	},
@@ -117,6 +117,7 @@ let screen = {
 		screen.clearActItem();
 		$("td#a11").html(`<img src='images/capitol.png' onclick="game.pickBuild('capitol', '${faction}')">`).addClass("aCapitol");
 		$("td#a12").html(`<img src='images/temple.png' onclick="game.pickBuild('temple', '${faction}')">`).addClass("aTemple");
+		$("td#a13").html(`<img src='images/farm.png' onclick="game.pickBuild('farm', '${faction}')">`).addClass("aFarm");
 	},
 	// Вывод выделенных юнитов на панельный блок
 	setSelectedItems: function(id, items) {
@@ -131,7 +132,7 @@ let screen = {
 	// Вывод информации о ресурсах
 	setCash: function(cash) {
 		$("#gold").html(cash.gold);
-		$("#tree").html(cash.tree);
+		$("#wood").html(cash.wood);
 		$("#metal").html(cash.metal);
 		$("#food").html(cash.food);
 	},
@@ -200,6 +201,7 @@ $(function() {
 		// Здания
 		if($(this).is(".aCapitol")) $("#popupplay").html(buildings.list["capitol"].description + "<br> Стоимость: " + JSON.stringify(buildings.list["capitol"].cost)).show();
 		if($(this).is(".aTemple")) $("#popupplay").html(buildings.list["temple"].description + "<br> Стоимость: " + JSON.stringify(buildings.list["temple"].cost)).show();
+		if($(this).is(".aFarm")) $("#popupplay").html(buildings.list["farm"].description + "<br> Стоимость: " + JSON.stringify(buildings.list["farm"].cost)).show();
 
 		// Юниты
 		if($(this).is(".aWorker")) $("#popupplay").html(units.list["worker"].description + "<br> Стоимость: " + JSON.stringify(units.list["worker"].cost)).show();
@@ -211,7 +213,7 @@ $(function() {
 		if($(this).is(".aBuild")) $("#popupplay").html("Построить здание, B").show();
 
 	}, function() {
-		$("#popupplay").hide().html("");
+		// $("#popupplay").hide().html("");
 	});
 	// Hover на pop-up окно
 	$("#popupplay").hover(function() { $(this).show() }, function() { $(this).hide() });
