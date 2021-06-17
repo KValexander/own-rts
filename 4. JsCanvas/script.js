@@ -87,7 +87,8 @@ let game = {
 		});
 
 		// Generating trees
-		for(let i = 16; i <= 16 * 16; i += 16) { game.addMisc("resources", "tree", 16, i); game.addMisc("resources", "tree", 16 * 16, i); } for(let i = 16; i <= 16 * 16; i += 16) { game.addMisc("resources", "tree", i, 16); game.addMisc("resources", "tree", i, 16 * 16); }
+		for(let i = 16; i <= 16 * 16; i += 16) { game.addMisc("resources", "tree", 16, i); game.addMisc("resources", "tree", 16 * 16, i); }
+			// for(let i = 16; i <= 16 * 16; i += 16) { game.addMisc("resources", "tree", i, 16); game.addMisc("resources", "tree", i, 16 * 16); }
 
 		// Adding textures
 		game.map.data.textures.forEach((texture) => {
