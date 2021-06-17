@@ -327,8 +327,10 @@ let game = {
 				// Motion and targeting setting
 				let target = null;
 				game.items.forEach(item => {
-					if(game.mouseCollision(item, x, y)) target = item.id;
-					else { if(item.selected) { item.target = null; item.action = "move"; item.move = {x: x - item.width / 2, y: y - item.height / 2}; } };
+					if(game.player.faction == item.faction) {
+						if(game.mouseCollision(item, x, y)) target = item.id;
+						else { if(item.selected) { item.target = null; item.action = "move"; item.move = {x: x - item.width / 2, y: y - item.height / 2}; } };
+					}
 				});
 				// Targeting
 				if(target != null) { game.selectedItems.forEach((item) => { item.target = target; item.action = "target"; }); }
@@ -532,7 +534,7 @@ let game = {
 
 	// Movement items
 	itemMove: function(item) {
-		if(item.type == "building" || game.player.faction != item.faction) return;
+		if(item.type == "building") return;
 		if(item.action == "move" || item.action == "target") item.speed = 2;
 		else item.speed = 0;
 
@@ -548,9 +550,10 @@ let game = {
 	// Significantly modify target system
 	// Movement items by target
 	itemMoveTarget(item) {
-		if(item.target == null || item.action != "target") return;
+		if(item.type == "building" || item.target == null || item.action != "target") return;
 		let it = game.getItemById(item.target);
 		if(it == undefined || game.moveCollision(item, it)) return game.itemMoveStop(item);
+		console.log(item);
 		item.move.x = it.x;
 		item.move.y = it.y;
 	},
@@ -578,11 +581,12 @@ let game = {
 
 	// Behavior of items when attacked
 	attackOnEnemy: function(item, it) {
-		if(item.type == "building" || item.faction == it.faction || item.action != "stand") return;
+		if(item.type == "building" || it == "building" || item.faction == it.faction || item.action != "stand") return;
 		if(item.x - item.sight <= (it.x + it.width) && it.x - item.sight <= (item.x + item.width)
 			&& item.y - item.sight <= (it.y + it.height) && it.y - item.sight <= (item.y + item.height)){
 			item.action = "target";
 			item.target = it.id;
+			item.speed = 2;
 		}
 	},
 
@@ -929,6 +933,7 @@ let game = {
 
 	// Remove Item
 	removeItem(item) {
+		game.itemMoveStop(item);
 		// Remove from personally select
 		if(item.id == game.personallySelected.id) {
 			game.personallySelected = {};
@@ -959,6 +964,7 @@ let game = {
 	removeItems(id) {
 		// Remove from items array
 		game.items.forEach((item, i) => {
+			game.itemMoveStop(item);
 			if(item.name == "farm") game.cash.food -= 5;
 			if(item.id == id) game.items.splice(i, 1);
 		});
