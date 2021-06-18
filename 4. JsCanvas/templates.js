@@ -19,7 +19,7 @@ let units = {
 			maxLevel: 1,
 			experiense: 0,
 			maxExperiense: 0,
-			cost: {"gold": 50},
+			cost: {"gold": 50, "food": 1},
 			frames: [],
 		},
 		"soldier": {
@@ -40,7 +40,7 @@ let units = {
 			maxLevel: 3,
 			experiense: 0,
 			maxExperiense: 500,
-			cost: {"gold": 80, "metal": 10, "food": 1},
+			cost: {"gold": 80, "metal": 10, "food": 2},
 			frames: [],
 		},
 		"meet": {
@@ -154,7 +154,7 @@ let heroes = {
 			maxLevel: 10,
 			experiense: 0,
 			maxExperiense: 5400,
-			cost: {"gold": 165, "food": 2},
+			cost: {"gold": 240, "metal": 40, "food": 5},
 			frames: [],
 		},
 	},
@@ -195,7 +195,7 @@ let resources = {
 			gridWidth: 2,
 			gridHeight: 2,
 			mining: 10,
-			minerals: 10000,
+			minerals: 1000,
 		},
 		"metalcore": {
 			iname: "Металлическая жила",

@@ -99,8 +99,8 @@ let screen = {
 			case "building": // если здание
 				switch(item.name) {
 					case "capitol": // капитолий
-						$("td#a11").html(`<img src='images/worker.png' onclick='game.addItem("unit", "worker", ${item.x + item.width / 2}, ${item.y + item.height + 16}, "${item.faction}", "${item.faction}")' />`).addClass("aWorker");
-						$("td#a12").html(`<img src='images/soldier.png' onclick='game.addItem("unit", "soldier", ${item.x + item.width / 2}, ${item.y + item.height + 16}, "${item.faction}", "${item.faction}")' />`).addClass("aSoldier");
+						$("td#a11").html(`<img src='images/worker.png' onclick='game.addItem("unit", "worker", ${item.x + item.width / 2 - 8}, ${item.y + item.height + 16}, "${item.faction}", "${item.faction}")' />`).addClass("aWorker");
+						$("td#a12").html(`<img src='images/soldier.png' onclick='game.addItem("unit", "soldier", ${item.x + item.width / 2 - 8}, ${item.y + item.height + 16}, "${item.faction}", "${item.faction}")' />`).addClass("aSoldier");
 					break;
 					case "temple": // храм
 						$("td#a11").html(`<img src='images/hero.png' onclick='game.addItem("hero", "leonid", ${item.x + item.width / 2}, ${item.y + item.height + 16}, "${item.faction}", "${item.faction}")' />`).addClass("aHero");
@@ -213,10 +213,10 @@ $(function() {
 		if($(this).is(".aBuild")) $("#popupplay").html("Построить здание, B").show();
 
 	}, function() {
-		// $("#popupplay").hide().html("");
+		$("#popupplay").hide().html("");
 	});
 	// Hover на pop-up окно
-	$("#popupplay").hover(function() { $(this).show() }, function() { $(this).hide() });
+	// $("#popupplay").hover(function() { $(this).show() }, function() { $(this).hide() });
 });
 
 // Вывод небольшого уведомления

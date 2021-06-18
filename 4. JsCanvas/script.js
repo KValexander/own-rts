@@ -86,9 +86,14 @@ let game = {
 			game.addItem(item.type, item.name, item.x, item.y, item.faction, item.color, item.life, item.id);
 		});
 
+		// Adding miscs
+		game.map.data.miscs.forEach((misc) => {
+			game.addMisc(misc.type, misc.name, misc.x, misc.y);
+		});
+
 		// Generating trees
-		for(let i = 16; i <= 16 * 16; i += 16) { game.addMisc("resources", "tree", 16, i); game.addMisc("resources", "tree", 16 * 16, i); }
-			// for(let i = 16; i <= 16 * 16; i += 16) { game.addMisc("resources", "tree", i, 16); game.addMisc("resources", "tree", i, 16 * 16); }
+		for(let i = 16; i <= 16 * 16; i += 16) { game.addMisc("resources", "tree", 16*4, i); game.addMisc("resources", "tree", 16 * 16, i); }
+		for(let i = 16 * 100; i <= 116 * 16; i += 16) { game.addMisc("resources", "tree", i, 16 * 4); game.addMisc("resources", "tree", i, 16 * 16); }
 
 		// Adding textures
 		game.map.data.textures.forEach((texture) => {
@@ -96,6 +101,7 @@ let game = {
 		});
 
 		game.player.faction = data.playerFaction;
+		game.camera.state = data.camera;
 
 		game.background = game.loadImage("gui/bg_game.jpg");
 		game.background.onload = () => callback(true);
@@ -139,11 +145,38 @@ let game = {
 
 	// Handling triggers
 	triggerHandling: function(trigger) {
-		if(trigger.type == "conditional") {
-			if(trigger.condition()) {
-				trigger.action();
-				game.triggerRemove(trigger);
-			}
+		switch(trigger.type) {
+			// Handling conditional triggers
+			case "conditional":
+				if(trigger.condition()) {
+					trigger.action();
+					game.triggerRemove(trigger);
+				}
+			break;
+
+			// Handling triggers with time
+			case "time":
+				switch(trigger.timetype) {
+					case "once":
+						if(!trigger.execution) {
+							trigger.execution = true;
+							setTimeout(()=> {
+								trigger.action();
+								game.triggerRemove(trigger);
+							}, trigger.time);
+						}
+					break;
+					case "repeat":
+						if(!trigger.execution) {
+							trigger.execution = true;
+							setTimeout(()=> {
+								trigger.action();
+								trigger.execution = false;
+							}, trigger.time);
+						}
+					break;
+				}
+			break;
 		}
 	},
 
@@ -184,6 +217,7 @@ let game = {
 			x: 0,
 			y: 0,
 			scale: 1,
+			state: true,
 		};
 	},
 
@@ -191,7 +225,7 @@ let game = {
 	cameraView: function() {
 		game.context.setTransform(1,0,0,1,0,0);
 		game.context.clearRect(0,0, game.canvas.width, game.canvas.height);
-		game.context.scale(game.camera.scale,game.camera.scale);
+		// game.context.scale(game.camera.scale,game.camera.scale);
 		game.context.translate(game.camera.x, game.camera.y);
 	},
 
@@ -224,39 +258,38 @@ let game = {
 	keyStroke: function() {
 		if(!game.key.stroke || !game.running) return;
 
-		// Delete selected items
-		if(game.key.down == "Delete") {
-			let count = game.selectedItems.length;
-			for(let i = 0; i < count; i++) {
-				game.removeItems(game.selectedItems[i].id);
-			}
-			game.clearSelection();
-		}
+		switch(game.key.down) {
+			// Delete selected items
+			case "Delete":
+				let count = game.selectedItems.length;
+				for(let i = 0; i < count; i++)
+					game.removeItems(game.selectedItems[i].id);
+				game.clearSelection();
+			break;
 
-		// Clear selection
-		if(game.key.down == "Escape") {
-			game.clearSelection();
-		}
+			// Clear selection
+			case "Escape": game.clearSelection(); break;
 
-		// Stop motion items
-		if(game.key.down == "KeyS") {
-			game.itemsMoveStop();
-		}
+			// Stop motion items
+			case "KeyS": game.itemsMoveStop(); break;
 
-		// Switch between selected items
-		if(game.key.down == "Tab" && game.selectedItems.length != 0) {
-			let id = 0, currentID = game.personallySelected.id;
+			// Switch between selected items
+			case "Tab":
+				if(game.selectedItems.length != 0) {
+					let id = 0, currentID = game.personallySelected.id;
 
-			// Checking the end of the selected items
-			if(++currentID > game.selectedItems[game.selectedItems.length - 1].id) id = game.selectedItems[0].id;
-			else id = currentID;
+					// Checking the end of the selected items
+					if(++currentID > game.selectedItems[game.selectedItems.length - 1].id) id = game.selectedItems[0].id;
+					else id = currentID;
 
-			// How do you work???
-			// Checking for id
-			// a very important line of code that I still don't fully understand
-			while(game.selectedItems.find(item => item.id == id) == undefined) id = id + 1;
+					// How do you work???
+					// Checking for id
+					// a very important line of code that I still don't fully understand
+					while(game.selectedItems.find(item => item.id == id) == undefined) id = id + 1;
 
-			game.selectPersonallyItem(id);
+					game.selectPersonallyItem(id);
+				}
+			break;
 		}
 	},
 
@@ -317,9 +350,9 @@ let game = {
 			break;
 			// Middle mouse button
 			case 2:
-				if(game.key.down == "AltLeft") game.addMisc("resources", "goldmine", game.mouse.coord.x, game.mouse.coord.y);
-				if(game.key.down == "ShiftLeft") game.addItem("unit", "worker", game.mouse.coord.x, game.mouse.coord.y, "red", "red");
-				if(game.key.down == "ControlLeft") game.addItem("unit", "worker", game.mouse.coord.x, game.mouse.coord.y, "blue", "blue");
+				// if(game.key.down == "AltLeft") game.addMisc("resources", "goldmine", game.mouse.coord.x, game.mouse.coord.y);
+				// if(game.key.down == "ShiftLeft") game.addItem("unit", "worker", game.mouse.coord.x, game.mouse.coord.y, "red", "red");
+				// if(game.key.down == "ControlLeft") game.addItem("unit", "worker", game.mouse.coord.x, game.mouse.coord.y, "blue", "blue");
 			break;
 			// Right mouse button
 			case 3:
@@ -334,7 +367,7 @@ let game = {
 				});
 				// Targeting
 				if(target != null) { game.selectedItems.forEach((item) => { item.target = target; item.action = "target"; }); }
-				if(game.key.down == "AltLeft") game.addMisc("resources","metalcore", game.mouse.coord.x, game.mouse.coord.y);
+				// if(game.key.down == "AltLeft") game.addMisc("resources","metalcore", game.mouse.coord.x, game.mouse.coord.y);
 			break;
 			default: break;
 		};
@@ -398,7 +431,7 @@ let game = {
 			game.mouse.stateHightlightLine = true;
 		}
 		else if(game.mouse.e.which == 1 && game.key.down == "AltLeft") {
-			game.addMisc("resources", "tree", game.mouse.coord.x, game.mouse.coord.y);
+			// game.addMisc("resources", "tree", game.mouse.coord.x, game.mouse.coord.y);
 		}
 		// State rendering hightlight line
 		else if(game.mouse.e.which == 1) {
@@ -475,8 +508,11 @@ let game = {
 		if(check != undefined)
 			game.selectedItems = game.selectedItems.filter(item => item.type != "building");
 
-		// Removing enemy faction units
-		game.selectedItems = game.selectedItems.filter(item => item.faction == game.player.faction);
+		// Removing enemy faction units in case of availability
+		check = game.selectedItems.find((item) => item.faction == game.player.faction);
+		if(check != undefined)
+			game.selectedItems = game.selectedItems.filter(item => item.faction == game.player.faction);
+
 
 		if(game.selectedItems.length != 0)
 			game.personallySelect(game.selectedItems[0]);
@@ -529,7 +565,8 @@ let game = {
 		game.personallySelected = item;
 
 		screen.setInformationItem(game.personallySelected);
-		screen.setActItem(game.personallySelected);
+		if(game.player.faction == item.faction)
+			screen.setActItem(game.personallySelected);
 	},
 
 	// Movement items
@@ -553,7 +590,6 @@ let game = {
 		if(item.type == "building" || item.target == null || item.action != "target") return;
 		let it = game.getItemById(item.target);
 		if(it == undefined || game.moveCollision(item, it)) return game.itemMoveStop(item);
-		console.log(item);
 		item.move.x = it.x;
 		item.move.y = it.y;
 	},
@@ -598,10 +634,12 @@ let game = {
 		// Trigger handling
 		game.triggers.forEach((trigger) => game.triggerHandling(trigger));
 
-		// Camera move
-		game.cameraMove(game.mouse.camera.x, game.mouse.camera.y);
-		// Camera test
-		game.cameraView();
+		if(game.camera.state) {
+			// Camera move
+			game.cameraMove(game.mouse.camera.x, game.mouse.camera.y);
+			// Camera test
+			game.cameraView();
+		}
 
 		// Set information about cash
 		screen.setCash(game.cash);
@@ -738,11 +776,11 @@ let game = {
 		// game.context.drawImage(game.background, 0, 0, screen.canvasWidth, screen.canvasHeight);
 
 		// Background blank
-		game.context.fillStyle = "black";
-		game.context.fillRect(0, 0, screen.canvasWidth, screen.canvasHeight);
+		game.context.fillStyle = "#99CCFF";
+		game.context.fillRect(0, 0, game.canvas.width, game.canvas.height);
 
 		// Rendering map, minus RAM
-		game.drawMap();
+		// game.drawMap();
 
 		// Rendering textures
 		game.textures.forEach((texture) => game.drawTexture(texture));
@@ -903,7 +941,7 @@ let game = {
 		if("food" in item.cost) game.cash.food -= item.cost.food;
 
 		// Increase food for building a farm
-		if(item.name == "farm") game.cash.food += 5;
+		if(item.name == "farm") game.cash.food += 6;
 
 		// Adding properties
 		item.id = id || game.counter++;
@@ -950,7 +988,7 @@ let game = {
 		});
 		screen.setSelectedItems(game.personallySelected.id, game.selectedItems);
 
-		if(item.name == "farm") game.cash.food -= 5;
+		if(item.name == "farm") game.cash.food -= 6;
 
 		// Remove from items array
 		for(let i = 0; i < game.items.length; i++) {
@@ -964,9 +1002,11 @@ let game = {
 	removeItems(id) {
 		// Remove from items array
 		game.items.forEach((item, i) => {
-			game.itemMoveStop(item);
-			if(item.name == "farm") game.cash.food -= 5;
-			if(item.id == id) game.items.splice(i, 1);
+			if(item.id == id)  {
+				if(item.name == "farm") game.cash.food -= 6;
+				game.itemMoveStop(item);
+				game.items.splice(i, 1);
+			}
 		});
 	},
 
@@ -1025,7 +1065,7 @@ let game = {
 			y: y,
 			width: width,
 			height: height,
-			color: color,
+			color: color || "rgba(0,0,0,0)",
 			walk: walkBool,
 		};
 		game.textures.push(texture);
@@ -1083,7 +1123,7 @@ let game = {
 
 	// End game
 	endGame: function() {
-		game.resetData();
+		// game.resetData();
 		game.running = false;
 	},
 
@@ -1091,16 +1131,25 @@ let game = {
 
 
 // Conditions for triggers
-// Death check item
+// Check item for death
 let isDead = (id) => {
 	let item = game.getItemById(id);
 	if(item == undefined) return true;
 	else return false;
 };
 
+// Check item hit points
+let isHitPoints = (id, hitPoints) => {
+	let item = game.getItemById(id);
+	if(item == undefined) return false;
+	if(item.hitPoints <= hitPoints) return true;
+	else return false;
+};
+
 // Checking to reach the specified location
 let reachThePlace = (id, x, y, width, height) => {
 	let item = game.getItemById(id);
+	if(item == undefined) return false;
 	if(item.x <= (x + width) && x <= (item.x + item.width)
 		&& item.y <= (y + height) && y <= (item.y + item.height))
 		return true;
