@@ -33,6 +33,8 @@ let screen = {
 
 	// Выбор экрана
 	changeScreen: function(game_id, menu_id) {
+		$("#window").hide();
+		$(".mask").hide();
 		$(".gamelayer").hide();
 		$("#" + game_id).show();
 		if(menu_id != undefined) {
@@ -224,3 +226,51 @@ function setNotification(text) {
 	$("#popupplay").html(text).show();	
 	setTimeout(() => $("#popupplay").hide(), 1000);
 };
+
+// Экран дополнительного окна на экране игры
+function windowScreen(type) {
+	game.running = false;
+
+	switch(type) {
+		case "menu":
+			$("#window").html(`
+				<input value="Главное меню" onclick="screen.changeScreen('mainmenu', 'startscreen')">
+				<input value="Вернуться" onclick="windowScreenHide()">
+			`);
+		break;
+		case "tasks":
+			$("#window").html(`
+				<h3>Главные задачи:</h3>
+				<p>Уничтожить капитолий вражеской фракции<p>
+				<p>Герой Леонид должен выжить</p> <br>
+
+				<h3>Дополнительные задачи:</h3>
+				<p>Уничтожить храм нейтральной фракции</p>
+			`);
+		break;
+		case "win":
+			$("#window").html(`
+				<h2>Вы победили!</h2> <br>
+				<input value="Победа!" onclick="screen.changeScreen('mainmenu', 'startscreen')">
+			`);
+		break;
+		case "lose":
+			$("#window").html(`
+				<h2>Вы проиграли!</h2> <br>
+				<input value="Поражение!" onclick="screen.changeScreen('mainmenu', 'startscreen')">
+			`);
+		break;
+	}
+	$("#window").show();
+	$(".mask").show();
+};
+
+// Сокрытие дополнительного экрана
+function windowScreenHide() {
+	game.running = true;
+	game.loop();
+	$("#window").hide();
+	$(".mask").hide();
+}
+
+$(function() { $(".mask").click(() => windowScreenHide()); });

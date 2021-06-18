@@ -78,7 +78,8 @@
 		<div id="gamescreen" class="gamelayer layer">
 			<!-- Верхняя часть интерфейса -->
 			<div id="interfacetop">
-				<input type="button" value="Меню"><input type="button" value="Задачи">
+				<input type="button" value="Меню" onclick="windowScreen('menu')">
+				<input type="button" value="Задачи" onclick="windowScreen('tasks')">
 				<!-- Полосы ресурсов -->
 				<div class="right">
 					<div>Золото: <span id="gold"></span></div>
@@ -158,6 +159,7 @@
 		<div id="popupplay"></div>
 		<!-- Ещё одно окно, на этот раз меню -->
 		<div id="window"></div>
+		<div class="mask"></div>
 	</div>
 
 

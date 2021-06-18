@@ -56,7 +56,6 @@ let game = {
 
 	// Load game data, assets, triggers, ect
 	loading: function(data, callback) {
-		console.log(data);
 		// Reset data and handling methods
 		game.resetData();
 		game.mapMethod();
@@ -67,13 +66,12 @@ let game = {
 		game.cameraMethod();
 
 		// Recording the current mission
-		game.map.data = data.missions[game.map.currentMission].data;
+		game.map.data = data.missions[game.map.currentMission];
 
 		// Adding triggers
 		game.map.data.triggers.forEach((trigger) => {
 			game.triggerAdd(trigger);
 		});
-		console.log(game.triggers);
 
 		// Cash
 		game.cash.gold = game.map.data.cash.gold;
@@ -248,7 +246,6 @@ let game = {
 			game.key.stroke = true;
 			game.keyStroke();
 			game.key.stroke = false;
-			console.log(game.key.down);
 		});
 		// Clear a key code in key.down
 		$("body").keyup((e) => game.key.down = {});
@@ -371,7 +368,6 @@ let game = {
 			break;
 			default: break;
 		};
-		console.log(game.items);
 	},
 
 	// Select personally item from selected items in #selectitems
@@ -422,6 +418,8 @@ let game = {
 
 		game.running = true;
 		game.loop();
+
+		windowScreen("tasks");
 	},
 
 	// Holding mouse event
@@ -1123,7 +1121,7 @@ let game = {
 
 	// End game
 	endGame: function() {
-		// game.resetData();
+		game.resetData();
 		game.running = false;
 	},
 
