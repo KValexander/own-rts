@@ -1,0 +1,35 @@
+test = [
+	{"type": "header", "name": "test"},
+
+	{"type": "requirements", "data":
+		[
+		{"key": "worker", "src": "images/worker.png"},
+		{"key": "soldier", "src": "images/soldier.png"},
+		{"key": "hero", "src": "images/hero.png"},
+		
+		{"key": "capitol", "src": "images/capitol.png"},
+		{"key": "temple", "src": "images/temple.png"},
+		{"key": "farm", "src": "images/farm.png"},
+
+		{"key": "goldmine", "src": "images/goldmine.png"},
+		{"key": "metalcore", "src": "images/metalcore.png"},
+		{"key": "tree", "src": "images/tree.png"}
+		]
+	},
+
+	{"type": "items", "data":
+		[
+		{"x": 100, "y": 100, "key": "worker"},
+		{"x": 200, "y": 100, "key": "soldier"},
+		{"x": 300, "y": 100, "key": "hero"},
+
+		{"x": 100, "y": 200, "key": "capitol"},
+		{"x": 200, "y": 200, "key": "temple"},
+		{"x": 300, "y": 200, "key": "farm"},
+
+		{"x": 100, "y": 300, "key": "goldmine"},
+		{"x": 200, "y": 300, "key": "metalcore"},
+		{"x": 300, "y": 300, "key": "tree"}
+		]
+	}
+];
