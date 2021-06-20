@@ -14,13 +14,24 @@ class Play extends Phaser.Scene {
 	// Creating the initial scene
 	create(data) {
 		// Background
-		this.background = this.add.tileSprite(0, 0, config.width, config.height, "background");
-		this.background.setOrigin(0,0);
+		// this.background = this.add.tileSprite(0, 0, config.width, config.height, "background");
+		// this.background.setOrigin(0,0);
+
+		this.tree = Phaser.Structs.RTree();
 
 		// Creating items
 		data.items.forEach((item, i) => {
 			let it = this.add.sprite(item.x, item.y, item.key);
 			this.items[i] = it;
+			this.tree.insert({
+				left: item.x,
+				top: item.y,
+				right: item.x + 16,
+				bottom: item.y + 16,
+				sprite: it,
+				w: item.width,
+				h: item.height,
+			});
 		});
 
 		// Set interactive for elements
@@ -38,11 +49,13 @@ class Play extends Phaser.Scene {
 		this.input.on('pointermove', this.mouseMove, this);
 		// Handling mouse clicks on elements
 		this.input.on('gameobjectdown', this.deathItem, this);
+		
+		// Rendering
+		this.events.on("render", this.render, this);
 	}
 
 	// Intermediate calculations
 	update() {
-
 		// Movement items
 		// this.items.forEach(item => this.moveUnit(item, 3));
 	}
@@ -51,11 +64,22 @@ class Play extends Phaser.Scene {
 	addItem(item, self) {
 		let it = self.add.sprite(item.x, item.y, item.key);
 		this.items.push(it);
+		this.tree.insert({
+			left: item.x,
+			top: item.y,
+			right: item.x + item.width,
+			bottom: item.y + item.height,
+			sprite: it,
+			w: item.width,
+			h: item.height,
+		});
 	}
 
 	// Handling mouse click
 	mouseClick(pointer) {
-		// this.addItem({x: pointer.x, y: pointer.y, key: "worker"}, this);
+		if(pointer.rightButtonDown()) {
+			this.addItem({x: pointer.x, y: pointer.y, key: "worker"}, this);
+		}
 	}
 
 	// Hanling mouse move
@@ -78,6 +102,12 @@ class Play extends Phaser.Scene {
 
 	// Select items in hightline
 	selectHightLine() {
+		this.selectedItems = this.tree.search({
+			minX: this.hightline.x,
+			minY: this.hightline.y,
+			maxX: this.hightline.x + this.hightline.width,
+			maxY: this.hightline.y + this.hightline.height,
+		});
 	}
 
 	// Handling death item
@@ -99,11 +129,13 @@ class Play extends Phaser.Scene {
 		item.x = Phaser.Math.Between(0, config.width);
 	}
 
+	// Rendering
 	render() {
+		let context = this.sys.game.context;
+		context.strokeStyle = "rgba(0,128,0,1)";
+		context.lineWidth = 2;
 		this.selectedItems.forEach(item => {
-			this.graphics.clear();
-			this.graphics.strokeRectShape(item);
+			context.strokeRect(item.x, item.y, item.width, item.height);
 		});
 	}
-
 }

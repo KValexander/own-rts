@@ -1,6 +1,6 @@
 // Phaser config
 let config = {
-	type: Phaser.AUTO,
+	type: Phaser.CANVAS,
 	width: 1280,
 	height: 720,
 	backgroundColor: 0x000000,
