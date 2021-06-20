@@ -1,0 +1,22 @@
+assets = {
+	"images":{
+		"worker": {"key": "worker", "src": "assets/images/worker.png"},
+		"soldier": {"key": "soldier", "src": "assets/images/soldier.png"},
+		"hero": {"key": "hero", "src": "assets/images/hero.png"},
+
+		"capitol": {"key": "capitol", "src": "assets/images/capitol.png"},
+		"temple": {"key": "temple", "src": "assets/images/temple.png"},
+		"farm": {"key": "farm", "src": "assets/images/farm.png"},
+
+		"tree": {"key": "tree", "src": "assets/images/tree.png"},
+		"goldmine": {"key": "goldmine", "src": "assets/images/goldmine.png"},
+		"metalcore": {"key": "metalcore", "src": "assets/images/metalcore.png"}
+	},
+	"spritesheets": {
+		"explosionBlood": {"key": "explosionBlood", "width": 32, "height": 32, "src": "assets/spritesheets/explosionBlood.png"}
+	},
+	"animations": {
+		"deathItem": {"key": "deathItem", "frames": "explosionBlood", "frameRate": "20", "repeat": 0, "hideOnComplete": true}
+	},
+	"terrains": [],
+}

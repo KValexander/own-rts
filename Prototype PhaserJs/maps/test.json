@@ -2,19 +2,11 @@ test = [
 	{"type": "header", "name": "test"},
 
 	{"type": "requirements", "data":
-		[
-		{"key": "worker", "src": "images/worker.png"},
-		{"key": "soldier", "src": "images/soldier.png"},
-		{"key": "hero", "src": "images/hero.png"},
-		
-		{"key": "capitol", "src": "images/capitol.png"},
-		{"key": "temple", "src": "images/temple.png"},
-		{"key": "farm", "src": "images/farm.png"},
-
-		{"key": "goldmine", "src": "images/goldmine.png"},
-		{"key": "metalcore", "src": "images/metalcore.png"},
-		{"key": "tree", "src": "images/tree.png"}
-		]
+		{
+			"images": ["worker", "soldier", "hero", "capitol", "temple", "farm", "tree", "goldmine", "metalcore"],
+			"spritesheets": ["explosionBlood"],
+			"animations": ["deathItem"],
+		}
 	},
 
 	{"type": "items", "data":
@@ -30,6 +22,12 @@ test = [
 		{"x": 100, "y": 300, "key": "goldmine"},
 		{"x": 200, "y": 300, "key": "metalcore"},
 		{"x": 300, "y": 300, "key": "tree"}
+		]
+	},
+
+	{"type": "animations", "data":
+		[
+		{"key": "deathItem", "frames": "explosionBlood", "frameRate": "20", "repeat": 0, "hideOnComplete": true}
 		]
 	}
 ];
