@@ -6,6 +6,14 @@ let config = {
 	backgroundColor: 0x000000,
 	scene: [Loading, Play],
 	pixelArt: true,
+	physics: {
+		default: "arcade",
+		arcade: {
+			debug: false,
+		}
+	}
 };
 // New Phaser Game
 let game = new Phaser.Game(config);
+
+document.oncontextmenu = () => false;

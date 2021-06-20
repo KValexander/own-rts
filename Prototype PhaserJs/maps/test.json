@@ -3,9 +3,9 @@ test = [
 
 	{"type": "requirements", "data":
 		{
-			"images": ["worker", "soldier", "hero", "capitol", "temple", "farm", "tree", "goldmine", "metalcore"],
-			"spritesheets": ["explosionBlood"],
-			"animations": ["deathItem"],
+		"images": ["worker", "soldier", "hero", "capitol", "temple", "farm", "tree", "goldmine", "metalcore"],
+		"spritesheets": ["explosionBlood"],
+		"animations": ["deathItem"],
 		}
 	},
 
@@ -22,12 +22,6 @@ test = [
 		{"x": 100, "y": 300, "key": "goldmine"},
 		{"x": 200, "y": 300, "key": "metalcore"},
 		{"x": 300, "y": 300, "key": "tree"}
-		]
-	},
-
-	{"type": "animations", "data":
-		[
-		{"key": "deathItem", "frames": "explosionBlood", "frameRate": "20", "repeat": 0, "hideOnComplete": true}
 		]
 	}
 ];

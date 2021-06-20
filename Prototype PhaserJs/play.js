@@ -1,42 +1,89 @@
 class Play extends Phaser.Scene {
-	constructor(data) {
+	constructor() {
 		super("play");
-		
-		this.counter = 1;
-		this.items = [];
 
-		this.elements = [];
-		this.selectedElements = [];
+		this.items = [];
+		this.selectedItems = [];
 	}
 
-	// Adding item
-	addItem(item) {
-		item.id = this.counter++;
-		this.items.push(item);
+	// Getting data from scene loading
+	init(data) {
+		this.counter = data.counter;
 	}
 
 	// Creating the initial scene
 	create(data) {
-		this.counte = data.counter;
-		this.items = data.items;
 		// Background
 		this.background = this.add.tileSprite(0, 0, config.width, config.height, "background");
 		this.background.setOrigin(0,0);
 
 		// Creating items
-		this.items.forEach((item, i) => {
-			let element = this.add.sprite(item.x, item.y, item.key);
-			this.elements[i] = element;
+		data.items.forEach((item, i) => {
+			let it = this.add.sprite(item.x, item.y, item.key);
+			this.items[i] = it;
 		});
 
 		// Set interactive for elements
-		this.elements.forEach(element => element.setInteractive());
+		this.items.forEach(item => item.setInteractive());
 
+		// Graphics
+		this.graphics = this.add.graphics({ lineStyle: {width: 2, color: 0x008000}});
+
+		// Hightline
+		this.hightline = new Phaser.Geom.Rectangle();
+
+		// Handling mouse click
+		this.input.on('pointerdown', this.mouseClick, this);
+		// Handling mouse move
+		this.input.on('pointermove', this.mouseMove, this);
 		// Handling mouse clicks on elements
 		this.input.on('gameobjectdown', this.deathItem, this);
+	}
 
-		// Creating text
-		this.add.text(20, 20, "Playing game", {font: "25px", fill: "yellow"});
+	// Intermediate calculations
+	update() {
+
+		// Movement items
+		// this.items.forEach(item => this.moveUnit(item, 3));
+	}
+
+	// Adding element 
+	addItem(item, self) {
+		let it = self.add.sprite(item.x, item.y, item.key);
+		this.items.push(it);
+	}
+
+	// Handling mouse click
+	mouseClick(pointer) {
+		// this.addItem({x: pointer.x, y: pointer.y, key: "worker"}, this);
+	}
+
+	// Hanling mouse move
+	mouseMove(pointer) {
+		this.graphics.clear();
+		if(pointer.leftButtonDown()) {
+			this.drawHightline(pointer.downX, pointer.downY, pointer.x, pointer.y);
+			this.selectHightLine();
+		}
+	}
+
+	// Draw hightline
+	drawHightline(dX, dY, x, y) {
+		this.hightline.x = dX;
+		this.hightline.y = dY;
+		this.hightline.width = x - dX;
+		this.hightline.height = y - dY;
+		this.graphics.strokeRectShape(this.hightline);
+	}
+
+	// Select items in hightline
+	selectHightLine() {
+	}
+
+	// Handling death item
+	deathItem(pointer, gameObject) {
+		gameObject.setTexture("explosionBlood");
+		gameObject.play("deathItem");
 	}
 
 	// Movement item
@@ -52,16 +99,11 @@ class Play extends Phaser.Scene {
 		item.x = Phaser.Math.Between(0, config.width);
 	}
 
-	// Intermediate calculations
-	update() {
-		// Movement items
-		this.elements.forEach(element => this.moveUnit(element, 3));
-	}
-
-	// Handling death item
-	deathItem(pointer, gameObject) {
-		gameObject.setTexture("explosionBlood");
-		gameObject.play("deathItem");
+	render() {
+		this.selectedItems.forEach(item => {
+			this.graphics.clear();
+			this.graphics.strokeRectShape(item);
+		});
 	}
 
 }
