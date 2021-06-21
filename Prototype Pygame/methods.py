@@ -25,17 +25,26 @@ class Mouse:
 		self.moveX = 0
 		self.moveY = 0
 
-	# Handling mouse click
-	def mouseClick(self, e):
+	# Handling mouse down
+	def mouseDown(self, e, selectionRect):
 		self.clickX, self.clickY = e.pos
 		self.coordClick = e.pos
-		print(self.coordClick)
+
+		if(e.button == 1):
+			selectionRect.state = True
+
+	# Handling mouse up
+	def mouseUp(self, e, selectionRect):
+		self.coordClick = 0
+		self.clickX = 0
+		self.clickY = 0
+
+		selectionRect.clear()
 
 	# Handling mouse move
 	def mouseMove(self, e):
 		self.moveX, self.moveY = e.pos
 		self.coordMove = e.pos
-		print(self.coordMove)
 
 # Keys class
 class Key:
@@ -73,7 +82,7 @@ class Cash:
 # Grid class
 class Grid:
 	def __init__(self):
-		self.color 	= BLACK
+		self.color 	= GRAY
 		self.i 		= 0
 		self.lineX 	= 16
 		self.lineY 	= 16
@@ -88,12 +97,12 @@ class Grid:
 
 	# Method grid rendering
 	def drawGrid(self, screen):
-		while self.i < self.collsX * self.lineX:
-			pygame.draw.line(screen, self.color, (self.i, 0), (self.i, WIDTH))
+		while self.i <= self.collsX * self.lineX:
+			pygame.draw.line(screen, self.color, (self.i, 0), (self.i, HEIGHT))
 			self.i += self.lineX
 		self.i = 0
-		while self.i < self.collsY * self.lineY:
-			pygame.draw.line(screen, self.color, (0, self.i), (HEIGHT, self.i))
+		while self.i <= self.collsY * self.lineY:
+			pygame.draw.line(screen, self.color, (0, self.i), (WIDTH, self.i))
 			self.i += self.lineY
 		self.i = 0
 		
@@ -106,3 +115,39 @@ class Camera:
 		self.height = 0
 		self.state 	= True
 		self.scale 	= 1
+
+# Items selection rectangle
+class SelectionRect:
+	def __init__(self):
+		self.lineWidth  = 2
+		self.color  	= GREEN
+		self.x 			= 0
+		self.y 			= 0
+		self.width 		= 0
+		self.height 	= 0
+		self.state 		= False
+
+	# Update data
+	def update(self, click, move):
+		cX, cY = click
+		mX, mY = move
+		self.x = cX
+		self.y = cY
+		self.width = mX - cX
+		self.height = mY - cY
+
+	# Rendering selection rectangle
+	def draw(self, screen):
+		pygame.draw.rect(screen, self.color, [self.x, self.y, self.width, self.height], self.lineWidth)
+
+	# Clear data
+	def clear(self):
+		self.x 		= 0
+		self.y 		= 0
+		self.width 	= 0
+		self.height = 0
+		self.state 	= False
+
+	# Adding items in selected items
+	def selection(self):
+		print("ss")
