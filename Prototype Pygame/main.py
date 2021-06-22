@@ -11,6 +11,7 @@ from methods import Mouse
 from methods import Key
 from methods import Cash
 from methods import Grid
+from methods import Fog
 from methods import SelectionRect
 
 
@@ -37,11 +38,12 @@ class Main:
 
 	# Creating elements before start
 	def loading(self):
-		self.mouse 	   = Mouse() 	 # Mouse
-		self.key 	   = Key() 	  	 # Keys
-		self.cash 	   = Cash() 	 # Cash
-		self.grid 	   = Grid() 	 # Grid
-
+		self.mouse 	= Mouse()	# Mouse
+		self.key 	= Key()		# Keys
+		self.cash 	= Cash()	# Cash
+		self.grid 	= Grid()	# Grid
+		self.fog 	= Fog() 	# Fog
+		
 		self.selectionRect = SelectionRect() # Selection Rect
 
 		# Load background image
@@ -66,15 +68,24 @@ class Main:
 			if event.type == pygame.KEYDOWN:
 				self.key.keyDown(event)
 
+			# Key up
+			if event.type == pygame.KEYUP:
+				self.key.keyUp(event)
+
+
 			# Mouse down
 			if event.type == pygame.MOUSEBUTTONDOWN:
 				self.mouse.mouseDown(event)
 				# State selection rectangle
 				if(event.button == 1):
 					self.selectionRect.state = True
-				# Adding worker in array
-				if(event.button == 2):
-					addItem("worker", self.counter, self.mouse.clickX, self.mouse.clickY)
+				# Adding worker in array MMB + LSHIFT
+				if(event.button == 2 and self.key.code == pygame.K_LSHIFT):
+					addItem("worker", self.counter, self.mouse.clickX, self.mouse.clickY, "red")
+					self.counter += 1
+				# Adding worker in array MMB + LCTRL
+				if(event.button == 2 and self.key.code == pygame.K_LCTRL):
+					addItem("worker", self.counter, self.mouse.clickX, self.mouse.clickY, "blue")
 					self.counter += 1
 
 			# Mouse up
@@ -108,7 +119,7 @@ class Main:
 	# Rendering
 	def render(self):
 		# Background color
-		self.screen.fill(BLACK)
+		self.screen.fill((153, 204, 255))
 
 		# Rendering grid
 		self.grid.drawGrid(self.screen)
@@ -116,6 +127,9 @@ class Main:
 		# Rendering items
 		for item in items:
 			item.draw(self.screen)
+
+		# Rendering fog
+		self.fog.drawFog(self.screen)
 			
 		# Rendering item selection rectangle 
 		if self.selectionRect.state == True:

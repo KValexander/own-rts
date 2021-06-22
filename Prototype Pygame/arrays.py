@@ -9,11 +9,12 @@ items = []
 selectedItems = []
 
 # Adding item
-def addItem(case, counter, x, y):
+def addItem(case, counter, x, y, faction):
 	if(case == "worker"):
-		item = Worker(counter, x, y)
+		item = Worker(counter, x, y, faction)
 	if(case == "soldier"):
-		item = Soldier(counter, x, y)
+		item = Soldier(counter, x, y, faction)
+
 	items.append(item)
 
 # Adding items in selection items

@@ -9,5 +9,5 @@ BLUE 	= (0, 0, 128)
 # Main settings
 WIDTH 	= 1024
 HEIGHT 	= 768
-FPS 	= 120
+FPS 	= 60
 SIZE 	= (WIDTH, HEIGHT)

@@ -36,3 +36,10 @@ def itemCollision(item, it):
 		and it.rect.y 	<= (item.rect.y + item.rect.height)):
 		return True
 	else: return False
+
+# Handling fog collision
+def fogCollision(item, i, j, x, y):
+	if(item.rect.x - item.sight <= (i + x) and i - item.sight <= (item.rect.x + item.rect.width)
+		and item.rect.y - item.sight <= (j + y) and j - item.sight <= (item.rect.y + item.rect.height)):
+		return True;
+	else: return False;

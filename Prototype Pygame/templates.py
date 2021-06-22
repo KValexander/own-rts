@@ -49,7 +49,6 @@ class Unit():
 
 	# Handling collisions
 	def collisions(self, items):
-		# return 0
 		for item in items:
 			# Handling collisions with each other
 			if itemCollision(self, item):
@@ -62,7 +61,12 @@ class Unit():
 
 
 class Worker(Unit):
-	def __init__(self, ident,  x, y):
+	def __init__(self, ident, x, y, faction):
+		# Specified characteristics
+		self.id 			= ident
+		self.x 				= x
+		self.y 				= y
+		self.faction		= faction
 
 		# Default characteristics
 		self.typeItem 		= "unit"
@@ -70,21 +74,21 @@ class Worker(Unit):
 		self.direction 		= 0
 		self.directions 	= 8
 		self.speed 			= 2
+		self.move 			= [0, 0]
 		self.target 		= 0
 		self.action 		= "stand"
 		self.selected 		= False
 		self.selectable 	= True
 
 		# Unique characteristics
-		self.id 			= ident
 		self.src 			= "images/worker.png"
-		self.name 			= "Worker"
+		self.name 			= "worker"
 		self.iname 			= "Рабочий"
 		self.description 	= "Усердный работяга"
 		self.width 			= 16
 		self.height 		= 24
 		self.gridWidth 		= 1
-		self.gridHeight 	= 1
+		self.gridHeight 	= 1.5
 		self.damage 		= [5, 7]
 		self.defense 		= 1
 		self.radius			= 10
@@ -95,7 +99,63 @@ class Worker(Unit):
 		self.maxExperiense 	= 0
 		self.cost 			= [50, 0, 0, 1]
 		self.frames 		= []
+
+		# Calculation
+		if(self.faction != "neutral"):
+			arr = self.src.split('.')
+			self.src = arr[0] + "_" + faction + "." + arr[1]
+
+		# Group characteristic
+		self.image 			= pygame.image.load(self.src)
+		self.rect 			= self.image.get_rect()
+		self.rect.center 	= (x, y)
+
+		# Collisions characteristic
+		self.cX = self.rect.x + self.rect.width / 2
+		self.cY = self.rect.y + self.rect.height / 2
+
+
+class Soldier(Unit):
+	def __init__(self, ident,  x, y):
+		# Specified characteristics
+		self.id 			= ident
+
+		# Default characteristics
+		self.typeItem 		= "unit"
+		self.animationIndex = 0
+		self.direction 		= 0
+		self.directions 	= 8
+		self.speed 			= 1
 		self.move 			= [0, 0]
+		self.target 		= 0
+		self.action 		= "stand"
+		self.selected 		= False
+		self.selectable 	= True
+
+		# Unique characteristics
+		self.src 			= "images/soldier.png"
+		self.name 			= "soldier"
+		self.iname 			= "Солдат"
+		self.description 	= "Солдат солдатит"
+		self.width 			= 20
+		self.height 		= 24
+		self.gridWidth 		= 1.25
+		self.gridHeight 	= 1.5
+		self.damage 		= [11, 15]
+		self.defense 		= 3
+		self.radius			= 16
+		self.sight 			= 32
+		self.level 			= 1
+		self.maxLevel 		= 3
+		self.experiense 	= 0
+		self.maxExperiense 	= 500
+		self.cost 			= [80, 10, 0, 2]
+		self.frames 		= []
+
+		# Calculation
+		if(self.faction != "neutral"):
+			arr = self.src.split('.')
+			self.src = arr[0] + "_" + faction + "." + arr[1]
 
 		# Group characteristic
 		self.image 			= pygame.image.load(self.src)

@@ -45,6 +45,10 @@ class Key:
 		self.code = e.key
 		print(e.key)
 
+	# Handling key up
+	def keyUp(self, e):
+		self.code = 0
+
 # Cash class
 class Cash:
 	def __init__(self):
@@ -67,11 +71,10 @@ class Cash:
 		self.metal 	+= metal
 		self.food 	+= food
 
-
 # Grid class
 class Grid:
 	def __init__(self):
-		self.color 	= GRAY
+		self.color 	= (230, 230, 230)
 		self.i 		= 0
 		self.lineX 	= 16
 		self.lineY 	= 16
@@ -97,13 +100,33 @@ class Grid:
 		
 # Camera class
 class Camera:
+	def __init__(self, width, height):
+		pass
+
+# Fog class
+class Fog:
 	def __init__(self):
-		self.x 		= 0
-		self.y 		= 0
-		self.width 	= 0
-		self.height = 0
-		self.state 	= True
-		self.scale 	= 1
+		self.color = BLACK
+		self.cX = Grid().collsX
+		self.cY = Grid().collsY
+		self.lX = Grid().lineX
+		self.lY = Grid().lineY
+		self.conditionX = self.cX * self.lX
+		self.conditionY = self.cY * self.lY
+		self.surface = pygame.Surface([self.lX, self.lY])
+		self.surface.fill(self.color)
+
+	def drawFog(self, screen):
+		for i in range(int(self.conditionX)):
+			if i % 16 == 0:
+				for j in range(int(self.conditionY)):
+					if j % 16 == 0:
+						self.surface.set_alpha(200)
+						for item in items:
+							if(fogCollision(item, i, j, self.lX, self.lY) == True):
+								self.surface.set_alpha(0)
+						screen.blit(self.surface, (i, j))
+
 
 # Items selection rectangle
 class SelectionRect:
