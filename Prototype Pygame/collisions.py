@@ -28,6 +28,11 @@ def selectCollision(selRect, item):
 		return True
 	else: return False
 
-# Adding items in selection items
-def addSelection(item):
-	selectedItems.append(item)
+# Handling item collision
+def itemCollision(item, it):
+	if(		item.rect.x <= (it.rect.x + it.rect.width)
+		and it.rect.x 	<= (item.rect.x + item.rect.width)
+		and item.rect.y <= (it.rect.y + it.rect.height)
+		and it.rect.y 	<= (item.rect.y + item.rect.height)):
+		return True
+	else: return False

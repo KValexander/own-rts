@@ -3,6 +3,7 @@ import pygame
 
 # Connect files
 from configs import *
+from arrays import *
 from collisions import *
 
 # Connect classes
@@ -12,8 +13,6 @@ from methods import Cash
 from methods import Grid
 from methods import SelectionRect
 
-# from templates import Unit
-from templates import Worker
 
 # Main class
 class Main:
@@ -25,6 +24,7 @@ class Main:
 		self.screen = pygame.display.set_mode(SIZE)
 		pygame.display.set_caption("Storm of Wars")
 
+		# For ID
 		self.counter = 1
 
 		# Gameloop speed
@@ -74,7 +74,8 @@ class Main:
 					self.selectionRect.state = True
 				# Adding worker in array
 				if(event.button == 2):
-					self.addItem("worker", self.mouse.clickX, self.mouse.clickY)
+					addItem("worker", self.counter, self.mouse.clickX, self.mouse.clickY)
+					self.counter += 1
 
 			# Mouse up
 			if event.type == pygame.MOUSEBUTTONUP:
@@ -94,7 +95,7 @@ class Main:
 
 		# Update items data
 		for item in items:
-			item.update()
+			item.update(items)
 
 		# Updating item selection rectangle data 
 		if self.selectionRect.state == True:
@@ -115,10 +116,6 @@ class Main:
 		# Rendering items
 		for item in items:
 			item.draw(self.screen)
-
-		# Rendering selected items
-		for item in selectedItems:
-			item.drawSelection(self.screen)
 			
 		# Rendering item selection rectangle 
 		if self.selectionRect.state == True:
@@ -126,13 +123,6 @@ class Main:
 
 		# Clear past render
 		pygame.display.flip()
-
-	# Adding item
-	def addItem(self, t, x, y):
-		if(t == "worker"):
-			item = Worker(self.counter, x, y)
-		items.append(item)
-		self.counter += 1
 
 	# Gameloop
 	def loop(self):

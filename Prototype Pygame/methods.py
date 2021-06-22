@@ -3,6 +3,7 @@ import pygame
 
 # Connect files
 from configs import *
+from arrays import *
 from collisions import *
 
 # Mouse class
@@ -78,9 +79,9 @@ class Grid:
 		self.collsY = HEIGHT / self.lineY
 
 	# Casting numbers to multiples of the grid
-	def gridSize(self, n, t):
-		if t == "x": n = int(n / self.lineX) * self.lineX
-		if t == "y": n = int(n / self.lineY) * self.lineY
+	def gridSize(self, n, case):
+		if case == "x": n = int(n / self.lineX) * self.lineX
+		if case == "y": n = int(n / self.lineY) * self.lineY
 		return n
 
 	# Method grid rendering
@@ -140,13 +141,12 @@ class SelectionRect:
 	def ghostSelection(self, screen):
 		for item in items:
 			if selectCollision(self, item):
-				print("a")
 				pygame.draw.rect(screen, (0, 90, 0), [item.rect.x, item.rect.y, item.rect.width, item.rect.height], 2)
 
 	# Adding items in selected items
 	def selection(self):
 		# Clear selected items
-		selectedItems.clear()
+		clearSelection()
 
 		# Adding selected items
 		for item in items:

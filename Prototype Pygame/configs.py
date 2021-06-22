@@ -11,7 +11,3 @@ WIDTH 	= 1024
 HEIGHT 	= 768
 FPS 	= 120
 SIZE 	= (WIDTH, HEIGHT)
-
-# Arrays
-items = []
-selectedItems = []
