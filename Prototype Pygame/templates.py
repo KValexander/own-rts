@@ -13,7 +13,16 @@ class Unit():
 	def draw(self, screen):
 		screen.blit(self.image, self.rect)
 
+	def drawSelection(self, screen):
+		pygame.draw.rect(screen, GREEN, [self.rect.x, self.rect.y, self.rect.width, self.rect.height], 2)
+
+	def setMove(self, x, y):
+		self.move = [x, y]
+		self.action = "move"
+
 	def movement(self):
+		if(self.action != "move"): return
+
 		if(self.rect.x < self.move[0]): self.rect.x += self.speed
 		if(self.rect.x > self.move[0]): self.rect.x -= self.speed
 		if(self.rect.y < self.move[1]): self.rect.y += self.speed
@@ -22,7 +31,6 @@ class Unit():
 
 class Worker(Unit):
 	def __init__(self, ident,  x, y):
-		# pygame.sprite.Sprite.__init__(self)
 
 		# Default characteristics
 		self.typeItem 		= "unit"
@@ -55,8 +63,7 @@ class Worker(Unit):
 		self.maxExperiense 	= 0
 		self.cost 			= [50, 0, 0, 1]
 		self.frames 		= []
-		# self.move 			= [x - self.width / 2, y - self.height / 2]
-		self.move 			= [100, 100]
+		self.move 			= [x, y]
 
 		# Group characteristic
 		self.image 			= pygame.image.load(self.src)

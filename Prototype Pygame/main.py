@@ -3,9 +3,9 @@ import pygame
 
 # Connect files
 from configs import *
+from collisions import *
 
 # Connect classes
-from methods import Collision
 from methods import Mouse
 from methods import Key
 from methods import Cash
@@ -25,12 +25,6 @@ class Main:
 		self.screen = pygame.display.set_mode(SIZE)
 		pygame.display.set_caption("Storm of Wars")
 
-		# Groups
-		# self.items = pygame.sprite.Group()
-		self.items = []
-		self.selectedItem = pygame.sprite.Group()
-		self.buttons = pygame.sprite.Group()
-
 		self.counter = 1
 
 		# Gameloop speed
@@ -43,12 +37,11 @@ class Main:
 
 	# Creating elements before start
 	def loading(self):
-		self.collision = Collision() # Collision
 		self.mouse 	   = Mouse() 	 # Mouse
 		self.key 	   = Key() 	  	 # Keys
 		self.cash 	   = Cash() 	 # Cash
 		self.grid 	   = Grid() 	 # Grid
-		
+
 		self.selectionRect = SelectionRect() # Selection Rect
 
 		# Load background image
@@ -75,13 +68,20 @@ class Main:
 
 			# Mouse down
 			if event.type == pygame.MOUSEBUTTONDOWN:
-				self.mouse.mouseDown(event, self.selectionRect)
+				self.mouse.mouseDown(event)
+				# State selection rectangle
+				if(event.button == 1):
+					self.selectionRect.state = True
+				# Adding worker in array
 				if(event.button == 2):
 					self.addItem("worker", self.mouse.clickX, self.mouse.clickY)
 
 			# Mouse up
 			if event.type == pygame.MOUSEBUTTONUP:
-				self.mouse.mouseUp(event, self.selectionRect)
+				self.mouse.mouseUp(event)
+				if(event.button == 1):
+					# Select items
+					self.selectionRect.selection()
 
 			# Mouse move
 			if event.type == pygame.MOUSEMOTION:
@@ -92,12 +92,14 @@ class Main:
 		# Gameloop speed
 		self.clock.tick(FPS)
 
-		# Update data items
-		# self.items.update()
+		# Update items data
+		for item in items:
+			item.update()
 
 		# Updating item selection rectangle data 
 		if self.selectionRect.state == True:
 			self.selectionRect.update(self.mouse.coordClick, self.mouse.coordMove)
+			self.selectionRect.ghostSelection(self.screen)
 
 		# Handling events
 		self.events()
@@ -111,14 +113,16 @@ class Main:
 		self.grid.drawGrid(self.screen)
 
 		# Rendering items
-		# self.items.draw(self.screen)
-		for val in self.items:
-			val.draw(self.screen)
+		for item in items:
+			item.draw(self.screen)
+
+		# Rendering selected items
+		for item in selectedItems:
+			item.drawSelection(self.screen)
 			
 		# Rendering item selection rectangle 
 		if self.selectionRect.state == True:
 			self.selectionRect.draw(self.screen)
-		# pygame.draw.rect(self.screen, GREEN, [self.grid.gridSize(self.mouse.moveX, "x"), self.grid.gridSize(self.mouse.moveY, "y"), 16, 16])
 
 		# Clear past render
 		pygame.display.flip()
@@ -127,8 +131,7 @@ class Main:
 	def addItem(self, t, x, y):
 		if(t == "worker"):
 			item = Worker(self.counter, x, y)
-		self.items.append(item)
-
+		items.append(item)
 		self.counter += 1
 
 	# Gameloop

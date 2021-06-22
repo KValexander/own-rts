@@ -3,16 +3,7 @@ import pygame
 
 # Connect files
 from configs import *
-
-# Collision class
-class Collision:
-	# Handling mouse collision
-	def mouseCollision(self, item, mousePos):
-		x, y = mousePos
-		if( item.x < x and (item.x + item.width) > x
-			or item.x < y and (item.y + item.height ) > y):
-			return true
-		else: return false
+from collisions import *
 
 # Mouse class
 class Mouse:
@@ -26,20 +17,17 @@ class Mouse:
 		self.moveY = 0
 
 	# Handling mouse down
-	def mouseDown(self, e, selectionRect):
+	def mouseDown(self, e):
 		self.clickX, self.clickY = e.pos
 		self.coordClick = e.pos
-
-		if(e.button == 1):
-			selectionRect.state = True
+		# Set movement items
+		if(e.button == 3):
+			for item in selectedItems:
+				item.setMove(self.clickX - item.rect.width / 2, self.clickY - item.rect.height / 2)
 
 	# Handling mouse up
-	def mouseUp(self, e, selectionRect):
-		self.coordClick = 0
-		self.clickX = 0
-		self.clickY = 0
-
-		selectionRect.clear()
+	def mouseUp(self, e):
+		return 0
 
 	# Handling mouse move
 	def mouseMove(self, e):
@@ -148,6 +136,22 @@ class SelectionRect:
 		self.height = 0
 		self.state 	= False
 
+	# Ghosts selection rectangle
+	def ghostSelection(self, screen):
+		for item in items:
+			if selectCollision(self, item):
+				print("a")
+				pygame.draw.rect(screen, (0, 90, 0), [item.rect.x, item.rect.y, item.rect.width, item.rect.height], 2)
+
 	# Adding items in selected items
 	def selection(self):
-		print("ss")
+		# Clear selected items
+		selectedItems.clear()
+
+		# Adding selected items
+		for item in items:
+			if selectCollision(self, item):
+				addSelection(item)
+
+		# Clear selection rectangle
+		self.clear()
