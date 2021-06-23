@@ -1,7 +1,11 @@
 # Including pygame library
 import pygame
 
-# Connect files
+# Connecting libraries
+import random
+import time
+
+# Connecting files
 from configs import *
 from arrays import *
 from collisions import *
@@ -10,12 +14,31 @@ from collisions import *
 class Unit():
 
 	# Update
-	def update(self, items):
+	def update(self):
+		self.interaction()
+		self.movementTarget()
 		self.movement()
-		self.collisions(items)
+
+	# Line of conduct
+	def lineConduct(self, case):
+		if case == "stand":
+			self.action = "stand"
+		elif case == "move":
+			self.action = "move"
+		elif case == "target":
+			self.action = "target"
+		elif case == "attack":
+			self.action = "attack"
+		elif case == "defense":
+			self.action = "defense"
 
 	# Draw
 	def draw(self, screen):
+		if(self.hitPoints <= 0): return removeItem(self)
+
+		if(self.selected == True):
+			self.drawMovementLine(screen)
+
 		screen.blit(self.image, self.rect)
 
 		if(self.selected == True):
@@ -23,19 +46,37 @@ class Unit():
 
 	# Draw selection rectangle
 	def drawSelection(self, screen):
-		pygame.draw.rect(screen, GREEN, [self.rect.x, self.rect.y, self.rect.width, self.rect.height], 2)
+		if(self.hitPoints > 100): color = GREEN
+		elif(self.hitPoints <= 99 and self.hitPoints > 30): color = ORANGE
+		elif(self.hitPoints <= 30): color = RED
+		pygame.draw.rect(screen, color, [self.rect.x, self.rect.y, self.rect.width, self.rect.height], 2)
+
+		if(self.faction == "red"): color = TEAMRED
+		elif(self.faction == "blue"): color = TEAMBLUE
+		else: color = GRAY
+		pygame.draw.circle(screen, color, self.rect.center, 16, 2)
+
+	# Draw movement line
+	def drawMovementLine(self, screen):
+		pygame.draw.line(screen, GREEN,
+			self.rect.center,
+			(self.move[0] + self.rect.width / 2, self.move[1] + self.rect.height / 2), 2)
 
 	# Set motion coordinates
 	def setMove(self, x, y):
+		self.lineConduct("move")
 		self.move = [x, y]
-		self.action = "move"
+
+	# Movement items by target
+	def movementTarget(self):
+		if(self.action != "target" or self.target == 0): return 0
+		item = getItemById(self.target)
+		if(item == None): return self.stopMove()
+		self.move = [item.rect.x, item.rect.y]
 
 	# Movement
 	def movement(self):
-		if(self.action != "move"): return 0
-
-		if(self.rect.x == self.move[0] and self.rect.y == self.move[0]):
-			return self.stopMove()
+		if(self.action == "stand" or self.action == "attack" or self.action == "defense"): return 0
 
 		if(self.rect.x < self.move[0]): self.rect.x += self.speed
 		if(self.rect.x > self.move[0]): self.rect.x -= self.speed
@@ -44,21 +85,62 @@ class Unit():
 
 	# Stop motion
 	def stopMove(self):
-		self.action = "stand"
-		self.move = [0, 0]
+		self.lineConduct("stand")
+		self.move = [self.rect.x, self.rect.y]
+		self.target = 0
+
+	# Behavior of items when attacked
+	def attackOnEnemy(self, item):
+		if(self.action == "move" or self.action == "defense" or self.faction == item.faction): return 0
+		if(attackCollision(self, item)):
+			if(self.id == item.id): return 0
+			self.target = item.id
+			self.lineConduct("target")
+
+	# Damage inflicting on the enemy
+	def damageOnEnemy(self, item):
+		if(self.faction == item.faction): return 0
+		print(time.time())
+		self.action = "target"
+		self.target = item.id
+		item.action = "target"
+		item.target = self.id
+		dmg1 = random.randint(self.damage[0], self.damage[1])
+		dmg2 = random.randint(item.damage[0], item.damage[1])
+		if(dmg1 <= 0): dmg1 = 0
+		if(dmg2 <= 0): dmg2 = 0
+		self.hitPoints -= dmg1
+		item.hitPoints -= dmg2
+		dX = self.cX - item.cX
+		dY = self.cY - item.cY
+		if(dX > 0): self.rect.x += self.speed
+		if(dX < 0): self.rect.x -= self.speed
+		if(dY > 0): self.rect.y += self.speed
+		if(dY < 0): self.rect.y -= self.speed
+
+	# Actions when colliding with other
+	def collisionAction(self, item):
+		if itemCollision(self, item):
+			# if(circleCollision(self, item)):
+			# 	if(self.id == item.id): return 0
+			# 	print("Есть столкновение")
+			dX = self.cX - item.cX
+			dY = self.cY - item.cY
+			if(dX > 0): self.rect.x += self.speed
+			if(dX < 0): self.rect.x -= self.speed
+			if(dY > 0): self.rect.y += self.speed
+			if(dY < 0): self.rect.y -= self.speed
+
+			self.damageOnEnemy(item)
 
 	# Handling collisions
-	def collisions(self, items):
+	def interaction(self):
 		for item in items:
+			edgesCollision(item)
+			# Behavior of items when attacked
+			self.attackOnEnemy(item)
 			# Handling collisions with each other
-			if itemCollision(self, item):
-				dX = self.cX - item.cX
-				dY = self.cY - item.cY
-				if(dX > 0): self.rect.x += self.speed
-				if(dX < 0): self.rect.x -= self.speed
-				if(dY > 0): self.rect.y += self.speed
-				if(dY < 0): self.rect.y -= self.speed
-
+			self.collisionAction(item)
 
 class Worker(Unit):
 	def __init__(self, ident, x, y, faction):
@@ -74,7 +156,7 @@ class Worker(Unit):
 		self.direction 		= 0
 		self.directions 	= 8
 		self.speed 			= 2
-		self.move 			= [0, 0]
+		self.move 			= [x, y]
 		self.target 		= 0
 		self.action 		= "stand"
 		self.selected 		= False
@@ -85,13 +167,14 @@ class Worker(Unit):
 		self.name 			= "worker"
 		self.iname 			= "Рабочий"
 		self.description 	= "Усердный работяга"
+		self.hitPoints		= 80
 		self.width 			= 16
 		self.height 		= 24
 		self.gridWidth 		= 1
 		self.gridHeight 	= 1.5
 		self.damage 		= [5, 7]
 		self.defense 		= 1
-		self.radius			= 10
+		self.radius			= 16
 		self.sight 			= 32
 		self.level 			= 1
 		self.maxLevel 		= 1
@@ -137,6 +220,7 @@ class Soldier(Unit):
 		self.name 			= "soldier"
 		self.iname 			= "Солдат"
 		self.description 	= "Солдат солдатит"
+		self.hitPoints		= 160
 		self.width 			= 20
 		self.height 		= 24
 		self.gridWidth 		= 1.25

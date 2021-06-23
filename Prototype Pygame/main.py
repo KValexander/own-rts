@@ -106,7 +106,7 @@ class Main:
 
 		# Update items data
 		for item in items:
-			item.update(items)
+			item.update()
 
 		# Updating item selection rectangle data 
 		if self.selectionRect.state == True:
