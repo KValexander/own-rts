@@ -14,6 +14,8 @@ from methods import Grid
 from methods import Fog
 from methods import SelectionRect
 
+from interface import Interface
+
 
 # Main class
 class Main:
@@ -43,6 +45,8 @@ class Main:
 		self.cash 	= Cash()	# Cash
 		self.grid 	= Grid()	# Grid
 		self.fog 	= Fog() 	# Fog
+
+		self.interface = Interface() # Interface
 		
 		self.selectionRect = SelectionRect() # Selection Rect
 
@@ -134,6 +138,9 @@ class Main:
 		# Rendering item selection rectangle 
 		if self.selectionRect.state == True:
 			self.selectionRect.draw(self.screen)
+
+		# Rendering Interface
+		self.interface.draw(self.screen)
 
 		# Clear past render
 		pygame.display.flip()

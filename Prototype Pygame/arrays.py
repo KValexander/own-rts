@@ -7,7 +7,6 @@ selectedItems = []
 
 # Interface arrays
 buttons = []
-surfaces = []
 
 # Getting item
 def getItemById(ident):
@@ -18,6 +17,12 @@ def getItemById(ident):
 # Removing item
 def removeItem(item):
 	items.remove(item)
+
+# Removing items
+def removeItems():
+	for item in selectedItems:
+		items.remove(item)
+	clearSelection()
 
 # Adding items in selection items
 def addSelection(item):

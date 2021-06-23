@@ -4,6 +4,7 @@ import pygame
 # Connecting libraries
 import random
 import time
+import threading
 
 # Connecting files
 from configs import *
@@ -40,6 +41,7 @@ class Unit():
 			self.drawMovementLine(screen)
 
 		screen.blit(self.image, self.rect)
+		self.drawHealtBar(screen)
 
 		if(self.selected == True):
 			self.drawSelection(screen)
@@ -58,9 +60,13 @@ class Unit():
 
 	# Draw movement line
 	def drawMovementLine(self, screen):
-		pygame.draw.line(screen, GREEN,
-			self.rect.center,
-			(self.move[0] + self.rect.width / 2, self.move[1] + self.rect.height / 2), 2)
+		pygame.draw.line(screen, GREEN, self.rect.center, (self.move[0] + self.rect.width / 2, self.move[1] + self.rect.height / 2), 2)
+
+	# Draw health bar
+	def drawHealtBar(self, screen):
+		rect = [self.rect.x, self.rect.y - 11, self.hitPoints / 5, 5]
+		pygame.draw.rect(screen, GREEN, rect)
+		pygame.draw.rect(screen, (0, 90, 0), rect, 1)
 
 	# Set motion coordinates
 	def setMove(self, x, y):
@@ -86,7 +92,7 @@ class Unit():
 	# Stop motion
 	def stopMove(self):
 		self.lineConduct("stand")
-		self.move = [self.rect.x, self.rect.y]
+		self.move = [self.rect.x, self.rect.y,]
 		self.target = 0
 
 	# Behavior of items when attacked
@@ -99,8 +105,8 @@ class Unit():
 
 	# Damage inflicting on the enemy
 	def damageOnEnemy(self, item):
+		self.timer = False
 		if(self.faction == item.faction): return 0
-		print(time.time())
 		self.action = "target"
 		self.target = item.id
 		item.action = "target"
@@ -121,9 +127,6 @@ class Unit():
 	# Actions when colliding with other
 	def collisionAction(self, item):
 		if itemCollision(self, item):
-			# if(circleCollision(self, item)):
-			# 	if(self.id == item.id): return 0
-			# 	print("Есть столкновение")
 			dX = self.cX - item.cX
 			dY = self.cY - item.cY
 			if(dX > 0): self.rect.x += self.speed
@@ -202,6 +205,9 @@ class Soldier(Unit):
 	def __init__(self, ident,  x, y):
 		# Specified characteristics
 		self.id 			= ident
+		self.x 				= x
+		self.y 				= y
+		self.faction		= faction
 
 		# Default characteristics
 		self.typeItem 		= "unit"

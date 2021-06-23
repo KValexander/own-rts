@@ -44,6 +44,8 @@ class Key:
 	def keyDown(self, e):
 		self.code = e.key
 		print(e.key)
+		if self.code == pygame.K_DELETE:
+			removeItems()
 
 	# Handling key up
 	def keyUp(self, e):
