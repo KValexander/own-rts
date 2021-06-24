@@ -88,7 +88,7 @@ class Interface:
 		clearSurfaces()
 
 		self.createSurface("srfc", BLACK, 110, 8, 8, 344, 48)
-		self.createButton("auf", "АУФ", WHITE, 184, 16, 160, 32, BLACK)
+		self.createButton("button", "button", WHITE, 184, 16, 160, 32, BLACK)
 		self.createButton("menu", "Меню", WHITE, 16, 16, 160, 32, BLACK)
 
 	# Draw interface
