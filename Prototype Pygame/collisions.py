@@ -21,7 +21,7 @@ def circleCollision(circle, crle):
 def mouseCollision(item, mousePos):
 	x, y = mousePos
 	if( item.x < x and (item.x + item.width) > x
-		or item.x < y and (item.y + item.height ) > y):
+		and item.x < y and (item.y + item.height ) > y):
 		return True
 	else: return False
 

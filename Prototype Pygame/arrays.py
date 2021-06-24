@@ -7,6 +7,7 @@ selectedItems = []
 
 # Interface arrays
 buttons = []
+surfaces = []
 
 # Getting item
 def getItemById(ident):
@@ -34,6 +35,15 @@ def clearSelection():
 	for item in items:
 		item.selected = False
 	selectedItems.clear()
+
+# Clear buttons
+def clearButtons():
+	buttons.clear()
+
+# Clear surfaces
+def clearSurfaces():
+	surfaces.clear()
+
 
 # Import templates
 from templates import Worker

@@ -46,8 +46,7 @@ class Main:
 		self.grid 	= Grid()	# Grid
 		self.fog 	= Fog() 	# Fog
 
-		self.interface = Interface() # Interface
-		
+		self.interface = Interface(self.screen) # Interface
 		self.selectionRect = SelectionRect() # Selection Rect
 
 		# Load background image
@@ -115,7 +114,6 @@ class Main:
 		# Updating item selection rectangle data 
 		if self.selectionRect.state == True:
 			self.selectionRect.update(self.mouse.coordClick, self.mouse.coordMove)
-			self.selectionRect.ghostSelection(self.screen)
 
 		# Handling events
 		self.events()
@@ -140,7 +138,7 @@ class Main:
 			self.selectionRect.draw(self.screen)
 
 		# Rendering Interface
-		self.interface.draw(self.screen)
+		self.interface.draw(self.mouse)
 
 		# Clear past render
 		pygame.display.flip()

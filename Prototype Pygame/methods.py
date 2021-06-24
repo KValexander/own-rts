@@ -9,13 +9,13 @@ from collisions import *
 # Mouse class
 class Mouse:
 	def __init__(self):
-		self.coordClick = 0
-		self.clickX = 0
-		self.clickY = 0
+		self.coordClick = (0, 0)
+		self.clickX 	= 0
+		self.clickY 	= 0
 
-		self.coordMove 	= 0
-		self.moveX = 0
-		self.moveY = 0
+		self.coordMove 	= (0, 0)
+		self.moveX 		= 0
+		self.moveY 		= 0
 
 	# Handling mouse down
 	def mouseDown(self, e):
@@ -78,24 +78,26 @@ class Grid:
 	def __init__(self):
 		self.color 	= (230, 230, 230)
 		self.i 		= 0
-		self.lineX 	= 16
-		self.lineY 	= 16
+		self.lineX 	= GRIDLINEX
+		self.lineY 	= GRIDLINEY
 		self.collsX = WIDTH / self.lineX
 		self.collsY = HEIGHT / self.lineY
+		self.conditionX = self.collsX * self.lineX
+		self.conditionY = self.collsY * self.lineY
 
 	# Casting numbers to multiples of the grid
 	def gridSize(self, n, case):
-		if case == "x": n = int(n / self.lineX) * self.lineX
-		if case == "y": n = int(n / self.lineY) * self.lineY
+		if case == "x": n = int(n / GRIDLINEX) * GRIDLINEX
+		if case == "y": n = int(n / GRIDLINEY) * GRIDLINEY
 		return n
 
 	# Method grid rendering
 	def drawGrid(self, screen):
-		while self.i <= self.collsX * self.lineX:
+		while self.i <= self.conditionX:
 			pygame.draw.line(screen, self.color, (self.i, 0), (self.i, HEIGHT))
 			self.i += self.lineX
 		self.i = 0
-		while self.i <= self.collsY * self.lineY:
+		while self.i <= self.conditionY:
 			pygame.draw.line(screen, self.color, (0, self.i), (WIDTH, self.i))
 			self.i += self.lineY
 		self.i = 0
@@ -109,10 +111,10 @@ class Camera:
 class Fog:
 	def __init__(self):
 		self.color = BLACK
-		self.cX = Grid().collsX
-		self.cY = Grid().collsY
-		self.lX = Grid().lineX
-		self.lY = Grid().lineY
+		self.lX = GRIDLINEX
+		self.lY = GRIDLINEY
+		self.cX = WIDTH / self.lX
+		self.cY = HEIGHT / self.lY
 		self.conditionX = self.cX * self.lX
 		self.conditionY = self.cY * self.lY
 		self.surface = pygame.Surface([self.lX, self.lY])
@@ -120,9 +122,9 @@ class Fog:
 
 	def drawFog(self, screen):
 		for i in range(int(self.conditionX)):
-			if i % 16 == 0:
+			if i % self.lX == 0:
 				for j in range(int(self.conditionY)):
-					if j % 16 == 0:
+					if j % self.lY == 0:
 						self.surface.set_alpha(200)
 						for item in items:
 							if(fogCollision(item, i, j, self.lX, self.lY) == True):
@@ -161,12 +163,6 @@ class SelectionRect:
 		self.width 	= 0
 		self.height = 0
 		self.state 	= False
-
-	# Ghosts selection rectangle
-	def ghostSelection(self, screen):
-		for item in items:
-			if selectCollision(self, item):
-				pygame.draw.rect(screen, (0, 90, 0), [item.rect.x, item.rect.y, item.rect.width, item.rect.height], 2)
 
 	# Adding items in selected items
 	def selection(self):
